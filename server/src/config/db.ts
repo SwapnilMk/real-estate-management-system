@@ -1,12 +1,17 @@
 import mongoose from "mongoose";
-import config from "../config/config";
+import config from "./config";
+import logger from "./logger";
 
-export const connectDB = async () => {
-    try {
-        await mongoose.connect(config.mongoUri);
-        console.log("MongoDB connected");
-    } catch (err) {
-        console.error("MongoDB connection error", err);
-        process.exit(1);
-    }
+const connectDB = async () => {
+  try {
+    await mongoose.connect(config.MONGO_URI);
+    console.log("MongoDB connected");
+    logger.info("MongoDB connected");
+  } catch (error) {
+    console.error("MongoDB connection failed", error);
+    logger.error("MongoDB connection failed", error);
+    process.exit(1);
+  }
 };
+
+export default connectDB;
