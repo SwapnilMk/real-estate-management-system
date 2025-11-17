@@ -1,0 +1,11 @@
+# Dependency directories
+server/node_modules
+server/logs
+client/node_modules
+
+# Environment variables
+server/.env
+
+# Logs and temporary files
+npm-debug.log*
+yarn-error.log*
