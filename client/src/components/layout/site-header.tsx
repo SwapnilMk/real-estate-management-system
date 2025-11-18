@@ -51,7 +51,7 @@ export function SiteHeader() {
 
         {/* Desktop Sign-In Button */}
         <div className="hidden md:flex">
-          <Link to="/login">
+          <Link to="/s">
             <Button className="bg-black text-white" size="sm">
               Sign In
             </Button>

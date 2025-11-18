@@ -77,7 +77,7 @@ export function MobileBottomNav() {
 
           {/* Login */}
           <Link
-            to="/login"
+            to="/sign-in"
             className="flex flex-col items-center justify-center text-xs text-gray-500"
           >
             <User className="h-5 w-5 mb-1" />
