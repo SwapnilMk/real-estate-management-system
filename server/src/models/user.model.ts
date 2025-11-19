@@ -6,7 +6,7 @@ export interface IUser extends Document {
   name: string;
   email: string;
   password?: string;
-  role: "AGENT" | "CLIENT" | "ADMIN";
+  role: "AGENT" | "CLIENT" ;
   googleId?: string;
   githubId?: string;
   resetPasswordToken?: string | null;
@@ -22,7 +22,7 @@ const UserSchema = new Schema<IUser>(
     password: { type: String },
     role: {
       type: String,
-      enum: ["AGENT", "CLIENT", "ADMIN"],
+      enum: ["AGENT", "CLIENT"],
       default: "CLIENT",
     },
     googleId: { type: String },

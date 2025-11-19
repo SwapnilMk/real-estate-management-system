@@ -1,83 +1,80 @@
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import {
-  Field,
-  FieldGroup,
-  FieldLabel,
-  FieldDescription,
-} from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
-import { useState } from "react";
-import axios from "axios";
-import { Link } from "react-router-dom";
+"use client";
 
-export function ForgotPasswordForm({
-  className,
-  ...props
-}: React.ComponentProps<"form">) {
+import { useState } from "react";
+import { Link } from "react-router-dom";
+import { useForgotPasswordMutation } from "@/services/authApi";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Loader2, CheckCircle } from "lucide-react";
+
+export function ForgotPasswordForm() {
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
+  const [forgotPassword, { isLoading }] = useForgotPasswordMutation();
 
-  async function handleSubmit(e: React.FormEvent) {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    try {
+      await forgotPassword({ email }).unwrap();
+      setSent(true);
+    } catch (err) {
+      // Always show success (security)
+      setSent(true);
+    }
+  };
 
-    await axios.post(`${import.meta.env.VITE_API_URL}/auth/forgot-password`, {
-      email,
-    });
-
-    setSent(true);
+  if (sent) {
+    return (
+      <div className="text-center space-y-6 py-10">
+        <CheckCircle className="mx-auto h-12 w-12 text-green-500" />
+        <h2 className="text-2xl font-bold">Check your email</h2>
+        <p className="text-muted-foreground max-w-md mx-auto">
+          If an account exists with <strong>{email}</strong>, we sent a password reset link.
+        </p>
+        <Link to="/sign-in">
+          <Button variant="outline">Back to Sign In</Button>
+        </Link>
+      </div>
+    );
   }
 
   return (
-    <form
-      onSubmit={handleSubmit}
-      className={cn("flex flex-col gap-6", className)}
-      {...props}
-    >
-      <FieldGroup>
-        {/* Header */}
-        <div className="flex flex-col items-center gap-1 text-center">
-          <h1 className="text-2xl font-bold">Forgot your password?</h1>
-          <p className="text-muted-foreground text-sm text-balance">
-            Enter your email and we will send you a reset link.
-          </p>
-        </div>
+    <form onSubmit={handleSubmit} className="space-y-6">
+      <div className="text-center space-y-2">
+        <h1 className="text-2xl font-bold">Forgot your password?</h1>
+        <p className="text-muted-foreground">We'll send you a reset link</p>
+      </div>
 
-        {/* Email */}
-        <Field>
-          <FieldLabel htmlFor="email">Email Address</FieldLabel>
-          <Input
-            id="email"
-            type="email"
-            placeholder="you@example.com"
-            required
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-          />
-        </Field>
+      <div>
+        <Label htmlFor="email">Email Address</Label>
+        <Input
+          id="email"
+          type="email"
+          placeholder="you@example.com"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+      </div>
 
-        {/* Submit */}
-        <Field>
-          <Button type="submit" className="w-full">
-            Send Reset Link
-          </Button>
-        </Field>
-
-        {/* Status */}
-        {sent && (
-          <p className="text-center text-green-600 text-sm">
-            If the email exists, a reset link has been sent.
-          </p>
+      <Button type="submit" className="w-full" disabled={isLoading}>
+        {isLoading ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Sending...
+          </>
+        ) : (
+          "Send Reset Link"
         )}
+      </Button>
 
-        {/* Back to login */}
-        <FieldDescription className="text-center">
-          Remembered your password?{" "}
-          <Link to="/sign-in" className="underline underline-offset-4">
-            Login
-          </Link>
-        </FieldDescription>
-      </FieldGroup>
+      <p className="text-center text-sm text-muted-foreground">
+        Remembered your password?{" "}
+        <Link to="/sign-in" className="underline hover:text-primary">
+          Sign in
+        </Link>
+      </p>
     </form>
   );
 }
