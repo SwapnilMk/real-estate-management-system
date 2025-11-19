@@ -6,11 +6,13 @@ export interface IUser extends Document {
   name: string;
   email: string;
   password?: string;
-  role: "AGENT" | "CLIENT" ;
-  googleId?: string;
-  githubId?: string;
+  role: "AGENT" | "CLIENT";
   resetPasswordToken?: string | null;
   resetPasswordExpires?: Date | null;
+  phoneNumber: string;
+  savedSearches: mongoose.Types.ObjectId[];
+  savedHomes: mongoose.Types.ObjectId[];
+  lastLogin: Date;
   comparePassword(candidate: string): Promise<boolean>;
   createPasswordResetToken(): string;
 }
@@ -25,12 +27,14 @@ const UserSchema = new Schema<IUser>(
       enum: ["AGENT", "CLIENT"],
       default: "CLIENT",
     },
-    googleId: { type: String },
-    githubId: { type: String },
     resetPasswordToken: { type: String },
     resetPasswordExpires: { type: Date },
+    phoneNumber: { type: String },
+    savedSearches: [{ type: Schema.Types.ObjectId, ref: "Search" }],
+    savedHomes: [{ type: Schema.Types.ObjectId, ref: "Property" }],
+    lastLogin: { type: Date, default: Date.now },
   },
-  { timestamps: true },
+  { timestamps: true }
 );
 
 // hash password before save if modified

@@ -5,12 +5,18 @@ import SignUp from "@/pages/auth/signup";
 import ForgotPassword from "@/pages/auth/forgot-password";
 import ResetPassword from "@/pages/auth/reset-password";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import About from "@/pages/client/about";
+import Contact from "@/pages/client/contact";
+import ListingsPage from "@/pages/client/listing";
+import PropertyDetailPage from "@/pages/client/property-detail";
+import MapSearchPage from "@/pages/client/map-search";
+import DashboardPage from "@/pages/agent/dashboard";
+import DashboardLayout from "@/components/layout/dashboard-layout";
 
 const MainLayout = lazy(() => import("@/components/layout/main-layout"));
 const Home = lazy(() => import("@/pages"));
 const NotFound = lazy(() => import("@/pages/NotFound"));
 const ErrorPage = lazy(() => import("@/pages/ErrorPage"));
-const AgentDashboard = lazy(() => import("@/pages/agent/dashboard"));
 const ClientProfile = lazy(() => import("@/pages/client/profile"));
 
 export const router = createBrowserRouter(
@@ -21,13 +27,25 @@ export const router = createBrowserRouter(
       errorElement: <ErrorPage />,
       children: [
         { index: true, element: <Home /> },
-        {
-          element: <ProtectedRoute allowedRoles={["AGENT"]} />,
-          children: [{ path: "/dashboard", element: <AgentDashboard /> }],
-        },
+        { path: "/about", element: <About /> },
+        { path: "/contact", element: <Contact /> },
+        { path: "/listings", element: <ListingsPage /> },
+        { path: "/listings/:id", element: <PropertyDetailPage /> },
+        { path: "/map-search", element: <MapSearchPage /> },
         {
           element: <ProtectedRoute />,
           children: [{ path: "/profile", element: <ClientProfile /> }],
+        },
+      ],
+    },
+    {
+      path: "/dashboard",
+      element: <DashboardLayout />,
+      errorElement: <ErrorPage />,
+      children: [
+        {
+          element: <ProtectedRoute allowedRoles={["AGENT"]} />,
+          children: [{ index: true, element: <DashboardPage /> }],
         },
       ],
     },

@@ -1,90 +1,99 @@
 "use client";
 
-import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { setCredentials } from "@/features/auth/authSlice";
+import { useForm } from "react-hook-form";
+import { z } from "zod";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useResetPasswordMutation } from "@/services/authApi";
 import { useAppDispatch } from "@/store/hooks";
+import { setCredentials } from "@/features/auth/authSlice";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Loader2, CheckCircle } from "lucide-react";
-import { useResetPasswordMutation } from "@/services/authApi";
+import { toast } from "sonner";
+import { useState } from "react";
+import { ResetPasswordSchema } from "../schema/auth.schemas";
 
 interface Props {
   token: string;
 }
 
 export function ResetPasswordForm({ token }: Props) {
-  const [password, setPassword] = useState("");
-  const [confirm, setConfirm] = useState("");
-  const [success, setSuccess] = useState(false);
-
-  const [resetPassword, { isLoading }] = useResetPasswordMutation();
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const [resetPassword, { isLoading }] = useResetPasswordMutation();
+  const [success, setSuccess] = useState(false);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const form = useForm<z.infer<typeof ResetPasswordSchema>>({
+    resolver: zodResolver(ResetPasswordSchema),
+    defaultValues: {
+      password: "",
+      confirm: "",
+    },
+  });
 
-    if (password !== confirm) {
-      alert("Passwords do not match");
-      return;
-    }
-
+  const onSubmit = async (data: z.infer<typeof ResetPasswordSchema>) => {
     try {
-      const result = await resetPassword({ token, password }).unwrap();
+      const result = await resetPassword({
+        token,
+        password: data.password,
+      }).unwrap();
+
       if (result.accessToken) {
         dispatch(setCredentials(result));
+        toast.success("Password reset successful");
         setSuccess(true);
+
         setTimeout(() => navigate("/"), 2000);
       }
     } catch (err: any) {
-      alert(err.data?.message || "Invalid or expired token");
+      toast.error(err.data?.message || "Invalid or expired token");
     }
   };
 
   if (success) {
     return (
-      <div className="text-center space-y-6 py-10">
+      <div className="text-center space-y-6 py-14">
         <CheckCircle className="mx-auto h-12 w-12 text-green-500" />
-        <h2 className="text-2xl font-bold">Password Reset Successful!</h2>
+        <h2 className="text-3xl font-bold">Password Reset Successful!</h2>
         <p className="text-muted-foreground">Redirecting to home...</p>
       </div>
     );
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-6">
+    <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+      {/* Header */}
       <div className="text-center space-y-2">
-        <h1 className="text-2xl font-bold">Set New Password</h1>
+        <h1 className="text-3xl font-bold">Set New Password</h1>
         <p className="text-muted-foreground">Enter a strong new password</p>
       </div>
 
-      <div className="space-y-4">
-        <div>
+      {/* Inputs */}
+      <div className="space-y-5">
+        <div className="space-y-2">
           <Label htmlFor="password">New Password</Label>
-          <Input
-            id="password"
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-            minLength={6}
-          />
+          <Input id="password" type="password" {...form.register("password")} />
+          {form.formState.errors.password && (
+            <p className="text-red-500 text-sm">
+              {form.formState.errors.password.message}
+            </p>
+          )}
         </div>
 
-        <div>
+        <div className="space-y-2">
           <Label htmlFor="confirm">Confirm New Password</Label>
-          <Input
-            id="confirm"
-            type="password"
-            value={confirm}
-            onChange={(e) => setConfirm(e.target.value)}
-            required
-          />
+          <Input id="confirm" type="password" {...form.register("confirm")} />
+          {form.formState.errors.confirm && (
+            <p className="text-red-500 text-sm">
+              {form.formState.errors.confirm.message}
+            </p>
+          )}
         </div>
       </div>
 
+      {/* Submit Button */}
       <Button type="submit" className="w-full" disabled={isLoading}>
         {isLoading ? (
           <>
