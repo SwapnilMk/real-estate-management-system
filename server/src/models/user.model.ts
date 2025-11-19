@@ -34,7 +34,7 @@ const UserSchema = new Schema<IUser>(
     savedHomes: [{ type: Schema.Types.ObjectId, ref: "Property" }],
     lastLogin: { type: Date, default: Date.now },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 // hash password before save if modified

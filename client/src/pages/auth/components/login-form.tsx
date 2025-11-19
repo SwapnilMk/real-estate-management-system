@@ -32,7 +32,11 @@ export function LoginForm() {
       const result = await login(data).unwrap();
       dispatch(setCredentials(result));
       toast.success("Login successful");
-      navigate("/");
+      if (result.user.role === "AGENT") {
+        navigate("/dashboard");
+      } else {
+        navigate("/");
+      }
     } catch (err: any) {
       toast.error(err.data?.message || "Invalid credentials");
     }

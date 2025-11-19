@@ -24,7 +24,7 @@ const SearchSchema = new Schema<ISearch>(
     },
     user: { type: Schema.Types.ObjectId, ref: "User", required: true },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 const Search = mongoose.model<ISearch>("Search", SearchSchema);

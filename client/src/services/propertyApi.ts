@@ -1,5 +1,5 @@
 // src/services/propertyApi.ts
-import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
+import { api } from "./api";
 
 export interface Property {
   id: string;
@@ -23,10 +23,7 @@ export interface Property {
   exteriorFeatures?: string[];
 }
 
-export const propertyApi = createApi({
-  reducerPath: "propertyApi",
-  baseQuery: fetchBaseQuery({ baseUrl: import.meta.env.VITE_API_BASE_URL }),
-  tagTypes: ["Property", "Similar"],
+export const propertyApi = api.injectEndpoints({
   endpoints: (builder) => ({
     getProperties: builder.query<
       {
@@ -58,12 +55,15 @@ export const propertyApi = createApi({
 
         return `/properties?${searchParams.toString()}`;
       },
+      providesTags: ["Property"],
     }),
     getPropertyById: builder.query<Property, string>({
       query: (id) => `/properties/${id}`,
+      providesTags: (_result, _error, id) => [{ type: "Property", id }],
     }),
     getSimilarProperties: builder.query<Property[], string>({
       query: (id) => `/properties/similar?id=${id}`,
+      providesTags: ["Similar"],
     }),
   }),
 });

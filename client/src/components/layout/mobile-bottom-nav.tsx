@@ -10,7 +10,6 @@ import {
   Map,
   Phone,
   PhoneCall,
-  MapPinHouse,
   User,
   Search,
   LogOut,
@@ -201,17 +200,6 @@ export function MobileBottomNav() {
                     >
                       <Map className="h-5 w-5 mr-3" />
                       Map Search
-                    </Link>
-                  </li>
-
-                  <li className="border-b pb-4">
-                    <Link
-                      to="/our-listings"
-                      onClick={() => setMenuOpen(false)}
-                      className="flex items-center"
-                    >
-                      <MapPinHouse className="h-5 w-5 mr-3" />
-                      Our Listings
                     </Link>
                   </li>
 

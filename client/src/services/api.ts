@@ -45,6 +45,13 @@ const baseQueryWithReauth: typeof baseQuery = async (
 
 export const api = createApi({
   baseQuery: baseQueryWithReauth,
-  tagTypes: ["User"],
+  tagTypes: [
+    "User",
+    "Property",
+    "Similar",
+    "AgentProperties",
+    "DashboardStats",
+    "Users",
+  ],
   endpoints: () => ({}),
 });

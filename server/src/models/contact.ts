@@ -1,11 +1,11 @@
-import mongoose from "mongoose"
+import mongoose from "mongoose";
 
 export interface IContact extends mongoose.Document {
-  name: string
-  email: string
-  phoneNumber?: string
-  message: string
-  createdAt: Date
+  name: string;
+  email: string;
+  phoneNumber?: string;
+  message: string;
+  createdAt: Date;
 }
 
 const contactSchema = new mongoose.Schema({
@@ -26,7 +26,7 @@ const contactSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-})
+});
 
-export const Contact = mongoose.models.Contact || mongoose.model<IContact>("Contact", contactSchema)
-
+export const Contact =
+  mongoose.models.Contact || mongoose.model<IContact>("Contact", contactSchema);

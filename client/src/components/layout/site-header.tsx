@@ -57,12 +57,7 @@ export function SiteHeader() {
           >
             Listings
           </Link>
-          <Link
-            to="/our-listings"
-            className="text-sm font-medium hover:text-primary"
-          >
-            Our Listings
-          </Link>
+
           <Link to="/about" className="text-sm font-medium hover:text-primary">
             About
           </Link>

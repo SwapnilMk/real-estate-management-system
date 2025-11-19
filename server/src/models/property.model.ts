@@ -54,8 +54,13 @@ const PropertySchema = new Schema(
       type: PointSchema,
       required: true,
     },
+    agentId: {
+      type: Schema.Types.ObjectId,
+      ref: "User",
+      required: false, // Optional for now as some properties might not have agents
+    },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 // Create a 2dsphere index on the geometry field for geospatial queries
@@ -98,6 +103,7 @@ export interface IProperty extends Document {
     type: string;
     coordinates: number[];
   };
+  agentId?: mongoose.Types.ObjectId;
 }
 
 // Create or retrieve the model
