@@ -6,7 +6,7 @@ import logger from "./logger";
 const allowedOrigins: string[] =
   config.NODE_ENV === "development"
     ? ["http://localhost:5173"]
-    : ["http://localhost:5173"];
+    : [config.FRONTEND_URL];
 
 const corsOptions: CorsOptions = {
   origin: (origin, callback) => {
