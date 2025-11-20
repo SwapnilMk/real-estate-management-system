@@ -5,6 +5,7 @@ client/node_modules
 
 # Environment variables
 server/.env
+client/.env
 
 # Logs and temporary files
 npm-debug.log*
