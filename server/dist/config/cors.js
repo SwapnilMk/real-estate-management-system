@@ -7,9 +7,7 @@ exports.corsOptions = void 0;
 const config_1 = __importDefault(require("./config"));
 const logger_1 = __importDefault(require("./logger"));
 // allowed Origin URLs for CORS
-const allowedOrigins = config_1.default.NODE_ENV === "development"
-    ? ["http://localhost:5173"]
-    : ["http://localhost:5173"];
+const allowedOrigins = ["http://localhost:5173", config_1.default.FRONTEND_URL];
 const corsOptions = {
     origin: (origin, callback) => {
         if (!origin || allowedOrigins.includes(origin)) {

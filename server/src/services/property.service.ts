@@ -150,3 +150,31 @@ export const getDashboardStats = async (agentId: string) => {
     totalUsers,
   };
 };
+
+export const deleteProperty = async (id: string, agentId: string) => {
+  const property = await Property.findById(id);
+  if (!property) throw new Error("Property not found");
+
+  // Check if the agent owns the property
+  if (property.agentId && property.agentId.toString() !== agentId) {
+    throw new Error("Not authorized to delete this property");
+  }
+
+  return await Property.findByIdAndDelete(id);
+};
+
+export const bulkDeleteProperties = async (ids: string[], agentId: string) => {
+  // Find all properties and verify ownership
+  const properties = await Property.find({ _id: { $in: ids } });
+
+  // Check if all properties belong to the agent
+  const unauthorized = properties.some(
+    (property) => property.agentId && property.agentId.toString() !== agentId,
+  );
+
+  if (unauthorized) {
+    throw new Error("Not authorized to delete one or more properties");
+  }
+
+  return await Property.deleteMany({ _id: { $in: ids }, agentId });
+};

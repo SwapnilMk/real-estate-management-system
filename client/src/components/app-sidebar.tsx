@@ -4,12 +4,9 @@ import {
   IconBuilding,
   IconHeart,
   IconMessageCircle,
-  IconMapPin,
   IconSettings,
   IconBell,
   IconUsers,
-  IconChartBar,
-  IconPlus,
 } from "@tabler/icons-react";
 
 import {
@@ -22,6 +19,7 @@ import {
 } from "@/components/ui/sidebar";
 import { NavMain } from "./nav-main";
 import { NavSecondary } from "./nav-secondary";
+import { Link } from "react-router-dom";
 
 const data = {
   navMain: [
@@ -35,11 +33,6 @@ const data = {
       url: "/dashboard/listings",
       icon: IconBuilding,
       badge: "12",
-    },
-    {
-      title: "Add New Property",
-      url: "/dashboard/listings/new",
-      icon: IconPlus,
     },
     {
       title: "Favorites",
@@ -56,16 +49,6 @@ const data = {
       title: "My Clients",
       url: "/dashboard/clients",
       icon: IconUsers,
-    },
-    {
-      title: "Analytics",
-      url: "/dashboard/analytics",
-      icon: IconChartBar,
-    },
-    {
-      title: "Saved Searches",
-      url: "/dashboard/searches",
-      icon: IconMapPin,
     },
   ],
 
@@ -92,7 +75,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton asChild size="lg">
-              <a href="/dashboard" className="flex items-center gap-2">
+              <Link to="/" className="flex items-center gap-2">
                 <div className="flex aspect-square size-8 items-center justify-center rounded-lg bg-primary text-primary-foreground">
                   <IconBuilding className="size-5" />
                 </div>
@@ -100,7 +83,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                   <span className="truncate font-semibold">Real Estate</span>
                   <span className="truncate text-xs">Agent Portal</span>
                 </div>
-              </a>
+              </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

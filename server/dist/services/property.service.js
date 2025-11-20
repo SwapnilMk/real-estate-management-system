@@ -3,7 +3,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getDashboardStats = exports.getAgentProperties = exports.updateProperty = exports.createProperty = exports.removeFromWishlist = exports.addToWishlist = exports.getSimilarProperties = exports.getPropertyById = exports.getProperties = void 0;
+exports.bulkDeleteProperties = exports.deleteProperty = exports.getDashboardStats = exports.getAgentProperties = exports.updateProperty = exports.createProperty = exports.removeFromWishlist = exports.addToWishlist = exports.getSimilarProperties = exports.getPropertyById = exports.getProperties = void 0;
 const property_model_1 = __importDefault(require("../models/property.model"));
 const user_model_1 = __importDefault(require("../models/user.model"));
 // Helper to flatten the GeoJSON property structure for the frontend
@@ -125,3 +125,25 @@ const getDashboardStats = async (agentId) => {
     };
 };
 exports.getDashboardStats = getDashboardStats;
+const deleteProperty = async (id, agentId) => {
+    const property = await property_model_1.default.findById(id);
+    if (!property)
+        throw new Error("Property not found");
+    // Check if the agent owns the property
+    if (property.agentId && property.agentId.toString() !== agentId) {
+        throw new Error("Not authorized to delete this property");
+    }
+    return await property_model_1.default.findByIdAndDelete(id);
+};
+exports.deleteProperty = deleteProperty;
+const bulkDeleteProperties = async (ids, agentId) => {
+    // Find all properties and verify ownership
+    const properties = await property_model_1.default.find({ _id: { $in: ids } });
+    // Check if all properties belong to the agent
+    const unauthorized = properties.some((property) => property.agentId && property.agentId.toString() !== agentId);
+    if (unauthorized) {
+        throw new Error("Not authorized to delete one or more properties");
+    }
+    return await property_model_1.default.deleteMany({ _id: { $in: ids }, agentId });
+};
+exports.bulkDeleteProperties = bulkDeleteProperties;

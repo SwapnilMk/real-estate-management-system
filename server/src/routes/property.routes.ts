@@ -9,6 +9,8 @@ import {
   updateProperty,
   getAgentProperties,
   getDashboardStats,
+  deleteProperty,
+  bulkDeleteProperties,
 } from "../controllers/property.controller";
 import { isAgent } from "../middlewares/auth.middleware";
 import { upload } from "../middlewares/upload.middleware";
@@ -35,5 +37,7 @@ router.get("/agent/stats", isAgent, getDashboardStats); // More specific route f
 router.get("/agent/properties", isAgent, getAgentProperties);
 router.post("/", isAgent, upload.single("image"), createProperty);
 router.put("/:id", isAgent, upload.single("image"), updateProperty);
+router.delete("/bulk", isAgent, bulkDeleteProperties); // Bulk delete must come before /:id
+router.delete("/:id", isAgent, deleteProperty);
 
 export default router;

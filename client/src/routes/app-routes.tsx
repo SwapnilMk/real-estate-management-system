@@ -10,10 +10,9 @@ import Contact from "@/pages/client/contact";
 import ListingsPage from "@/pages/client/listing";
 import PropertyDetailPage from "@/pages/client/property-detail";
 import MapSearchPage from "@/pages/client/map-search";
-import DashboardPage from "@/pages/agent/dashboard";
-import MyProperties from "@/pages/agent/MyProperties";
-import AddProperty from "@/pages/agent/AddProperty";
-import UserList from "@/pages/agent/UserList";
+import DashboardPage from "@/pages/agent/dashboard/dashboard";
+import MyProperties from "@/pages/agent/listing/listing";
+import UserList from "@/pages/agent/user/user-list";
 import DashboardLayout from "@/components/layout/dashboard-layout";
 
 const MainLayout = lazy(() => import("@/components/layout/main-layout"));
@@ -51,8 +50,6 @@ export const router = createBrowserRouter(
           children: [
             { index: true, element: <DashboardPage /> },
             { path: "listings", element: <MyProperties /> },
-            { path: "listings/new", element: <AddProperty /> },
-            { path: "listings/edit/:id", element: <AddProperty /> },
             { path: "clients", element: <UserList /> },
           ],
         },

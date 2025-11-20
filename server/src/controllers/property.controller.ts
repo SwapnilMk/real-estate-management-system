@@ -9,6 +9,8 @@ import {
   updateProperty as updatePropertyService,
   getAgentProperties as getAgentPropertiesService,
   getDashboardStats as getDashboardStatsService,
+  deleteProperty as deletePropertyService,
+  bulkDeleteProperties as bulkDeletePropertiesService,
 } from "../services/property.service";
 import { uploadToCloudinary } from "../middlewares/upload.middleware";
 
@@ -224,5 +226,39 @@ export const getDashboardStats = async (req: Request, res: Response) => {
     res.json(stats);
   } catch (error) {
     res.status(500).json({ message: "Error fetching dashboard stats" });
+  }
+};
+
+export const deleteProperty = async (req: Request, res: Response) => {
+  try {
+    await deletePropertyService(req.params.id, req.user.id);
+    res.json({ message: "Property deleted successfully" });
+  } catch (error: any) {
+    console.error(error);
+    if (error.message === "Not authorized to delete this property") {
+      res.status(403).json({ message: error.message });
+    } else if (error.message === "Property not found") {
+      res.status(404).json({ message: error.message });
+    } else {
+      res.status(500).json({ message: "Error deleting property" });
+    }
+  }
+};
+
+export const bulkDeleteProperties = async (req: Request, res: Response) => {
+  try {
+    const { ids } = req.body;
+    if (!ids || !Array.isArray(ids) || ids.length === 0) {
+      return res.status(400).json({ message: "Invalid property IDs" });
+    }
+    await bulkDeletePropertiesService(ids, req.user.id);
+    res.json({ message: `${ids.length} properties deleted successfully` });
+  } catch (error: any) {
+    console.error(error);
+    if (error.message === "Not authorized to delete one or more properties") {
+      res.status(403).json({ message: error.message });
+    } else {
+      res.status(500).json({ message: "Error deleting properties" });
+    }
   }
 };

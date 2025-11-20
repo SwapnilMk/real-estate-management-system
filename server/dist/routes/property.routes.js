@@ -22,4 +22,6 @@ router.get("/agent/stats", auth_middleware_1.isAgent, property_controller_1.getD
 router.get("/agent/properties", auth_middleware_1.isAgent, property_controller_1.getAgentProperties);
 router.post("/", auth_middleware_1.isAgent, upload_middleware_1.upload.single("image"), property_controller_1.createProperty);
 router.put("/:id", auth_middleware_1.isAgent, upload_middleware_1.upload.single("image"), property_controller_1.updateProperty);
+router.delete("/bulk", auth_middleware_1.isAgent, property_controller_1.bulkDeleteProperties); // Bulk delete must come before /:id
+router.delete("/:id", auth_middleware_1.isAgent, property_controller_1.deleteProperty);
 exports.default = router;

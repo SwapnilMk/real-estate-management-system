@@ -44,6 +44,21 @@ export const agentApi = api.injectEndpoints({
       }),
       invalidatesTags: ["AgentProperties", "DashboardStats"],
     }),
+    deleteProperty: builder.mutation<any, string>({
+      query: (id) => ({
+        url: `/properties/${id}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["AgentProperties", "DashboardStats"],
+    }),
+    bulkDeleteProperties: builder.mutation<any, string[]>({
+      query: (ids) => ({
+        url: "/properties/bulk",
+        method: "DELETE",
+        body: { ids },
+      }),
+      invalidatesTags: ["AgentProperties", "DashboardStats"],
+    }),
   }),
 });
 
@@ -53,4 +68,6 @@ export const {
   useGetUsersQuery,
   useCreatePropertyMutation,
   useUpdatePropertyMutation,
+  useDeletePropertyMutation,
+  useBulkDeletePropertiesMutation,
 } = agentApi;

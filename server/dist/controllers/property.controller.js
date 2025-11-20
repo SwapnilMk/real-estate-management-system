@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.getDashboardStats = exports.getAgentProperties = exports.updateProperty = exports.createProperty = exports.removeFromWishlist = exports.addToWishlist = exports.getSimilarProperties = exports.getPropertyById = exports.getProperties = void 0;
+exports.bulkDeleteProperties = exports.deleteProperty = exports.getDashboardStats = exports.getAgentProperties = exports.updateProperty = exports.createProperty = exports.removeFromWishlist = exports.addToWishlist = exports.getSimilarProperties = exports.getPropertyById = exports.getProperties = void 0;
 const property_service_1 = require("../services/property.service");
 const upload_middleware_1 = require("../middlewares/upload.middleware");
 const getProperties = async (req, res) => {
@@ -190,3 +190,42 @@ const getDashboardStats = async (req, res) => {
     }
 };
 exports.getDashboardStats = getDashboardStats;
+const deleteProperty = async (req, res) => {
+    try {
+        await (0, property_service_1.deleteProperty)(req.params.id, req.user.id);
+        res.json({ message: "Property deleted successfully" });
+    }
+    catch (error) {
+        console.error(error);
+        if (error.message === "Not authorized to delete this property") {
+            res.status(403).json({ message: error.message });
+        }
+        else if (error.message === "Property not found") {
+            res.status(404).json({ message: error.message });
+        }
+        else {
+            res.status(500).json({ message: "Error deleting property" });
+        }
+    }
+};
+exports.deleteProperty = deleteProperty;
+const bulkDeleteProperties = async (req, res) => {
+    try {
+        const { ids } = req.body;
+        if (!ids || !Array.isArray(ids) || ids.length === 0) {
+            return res.status(400).json({ message: "Invalid property IDs" });
+        }
+        await (0, property_service_1.bulkDeleteProperties)(ids, req.user.id);
+        res.json({ message: `${ids.length} properties deleted successfully` });
+    }
+    catch (error) {
+        console.error(error);
+        if (error.message === "Not authorized to delete one or more properties") {
+            res.status(403).json({ message: error.message });
+        }
+        else {
+            res.status(500).json({ message: "Error deleting properties" });
+        }
+    }
+};
+exports.bulkDeleteProperties = bulkDeleteProperties;
