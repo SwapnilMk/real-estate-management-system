@@ -11,7 +11,10 @@ import config from "../config/config";
 export const COOKIE_OPTIONS = {
   httpOnly: true,
   secure: config.NODE_ENV === "production",
-  sameSite: "lax" as const,
+  sameSite: (config.NODE_ENV === "production" ? "none" : "lax") as
+    | "none"
+    | "lax"
+    | "strict",
   maxAge: 7 * 24 * 60 * 60 * 1000,
 };
 

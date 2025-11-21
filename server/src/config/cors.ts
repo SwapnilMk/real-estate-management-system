@@ -4,7 +4,6 @@ import logger from "./logger";
 
 // allowed Origin URLs for CORS
 const allowedOrigins: string[] = [
-  "*",
   "https://real-estate-management-web.vercel.app/",
   config.FRONTEND_URL,
   "http://localhost:5173",
@@ -20,7 +19,7 @@ const corsOptions: CorsOptions = {
       callback(new Error("Not allowed by CORS"));
     }
   },
-  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD"],
+   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD"],
   allowedHeaders: [
     "Content-Type",
     "Authorization",
