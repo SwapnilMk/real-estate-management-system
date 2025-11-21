@@ -76,10 +76,12 @@ export default function Dashboard() {
           </CardContent>
         </Card>
 
-        {/* Sales */}
+        {/* Total Inquiries */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Sales</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Total Inquiries
+            </CardTitle>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
@@ -90,22 +92,23 @@ export default function Dashboard() {
               strokeWidth="2"
               className="text-muted-foreground h-4 w-4"
             >
-              <rect width="20" height="14" x="2" y="5" rx="2" />
-              <path d="M2 10h20" />
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
             </svg>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">+12,234</div>
-            <p className="text-muted-foreground text-xs">
-              +19% from last month
-            </p>
+            <div className="text-2xl font-bold">
+              {isLoading ? "..." : stats?.totalInterests || 0}
+            </div>
+            <p className="text-muted-foreground text-xs">All time inquiries</p>
           </CardContent>
         </Card>
 
-        {/* Active Now */}
+        {/* Pending Inquiries */}
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Active Now</CardTitle>
+            <CardTitle className="text-sm font-medium">
+              Pending Inquiries
+            </CardTitle>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
@@ -116,14 +119,15 @@ export default function Dashboard() {
               strokeWidth="2"
               className="text-muted-foreground h-4 w-4"
             >
-              <path d="M22 12h-4l-3 9L9 3l-3 9H2" />
+              <circle cx="12" cy="12" r="10" />
+              <polyline points="12 6 12 12 16 14" />
             </svg>
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">+573</div>
-            <p className="text-muted-foreground text-xs">
-              +201 since last hour
-            </p>
+            <div className="text-2xl font-bold">
+              {isLoading ? "..." : stats?.pendingInterests || 0}
+            </div>
+            <p className="text-muted-foreground text-xs">Requires attention</p>
           </CardContent>
         </Card>
       </div>
@@ -132,10 +136,10 @@ export default function Dashboard() {
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-7">
         <Card className="col-span-1 lg:col-span-4">
           <CardHeader>
-            <CardTitle>Overview</CardTitle>
+            <CardTitle>Inquiry Overview</CardTitle>
           </CardHeader>
           <CardContent className="ps-2">
-            <Overview />
+            <Overview data={stats?.monthlyInterests} />
           </CardContent>
         </Card>
 
@@ -152,7 +156,7 @@ export default function Dashboard() {
           </CardContent>
         </Card>
       </div>
-      <Analytics />
+      <Analytics propertiesByType={stats?.propertiesByType} />
     </div>
   );
 }

@@ -5,12 +5,14 @@ import {
   getSimilarProperties as getSimilarPropertiesService,
   addToWishlist as addToWishlistService,
   removeFromWishlist as removeFromWishlistService,
+  getSavedProperties as getSavedPropertiesService,
   createProperty as createPropertyService,
   updateProperty as updatePropertyService,
   getAgentProperties as getAgentPropertiesService,
   getDashboardStats as getDashboardStatsService,
   deleteProperty as deletePropertyService,
   bulkDeleteProperties as bulkDeletePropertiesService,
+  getAgentFavoritedProperties as getAgentFavoritedPropertiesService,
 } from "../services/property.service";
 import { uploadToCloudinary } from "../middlewares/upload.middleware";
 
@@ -34,9 +36,14 @@ export const getPropertyById = async (req: Request, res: Response) => {
 
 export const getSimilarProperties = async (req: Request, res: Response) => {
   try {
-    const properties = await getSimilarPropertiesService(req.params.id);
+    const id = (req.query.id as string) || req.params.id;
+    if (!id) {
+      return res.status(400).json({ message: "Property ID is required" });
+    }
+    const properties = await getSimilarPropertiesService(id);
     res.json(properties);
   } catch (error) {
+    console.error("Error in getSimilarProperties:", error);
     res.status(500).json({ message: "Error fetching similar properties" });
   }
 };
@@ -56,6 +63,15 @@ export const removeFromWishlist = async (req: Request, res: Response) => {
     res.json(user);
   } catch (error) {
     res.status(500).json({ message: "Error removing from wishlist" });
+  }
+};
+
+export const getSavedProperties = async (req: Request, res: Response) => {
+  try {
+    const properties = await getSavedPropertiesService(req.user.id);
+    res.json(properties);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching saved properties" });
   }
 };
 
@@ -102,9 +118,9 @@ export const createProperty = async (req: Request, res: Response) => {
         province,
         postal_code,
         community_name,
-        bedrooms_total,
-        bathroom_total,
-        price,
+        bedrooms_total: Number(bedrooms_total),
+        bathroom_total: Number(bathroom_total),
+        price: Number(price),
         type,
         transaction_type,
         last_updated: Date.now(),
@@ -260,5 +276,18 @@ export const bulkDeleteProperties = async (req: Request, res: Response) => {
     } else {
       res.status(500).json({ message: "Error deleting properties" });
     }
+  }
+};
+
+export const getAgentFavoritedProperties = async (
+  req: Request,
+  res: Response,
+) => {
+  try {
+    const favorites = await getAgentFavoritedPropertiesService(req.user.id);
+    res.json(favorites);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error fetching agent favorites" });
   }
 };

@@ -29,6 +29,7 @@ import {
   useUpdatePropertyMutation,
 } from "@/services/agentApi";
 import { toast } from "sonner";
+import { LocationPicker } from "@/components/location-picker";
 
 const formSchema = z.object({
   street_address: z.string().min(1, "Street address is required"),
@@ -89,23 +90,23 @@ export function PropertiesMutateDrawer() {
   useEffect(() => {
     if (editingProperty) {
       form.reset({
-        street_address: editingProperty.properties.street_address,
-        city: editingProperty.properties.city,
-        province: editingProperty.properties.province,
-        postal_code: editingProperty.properties.postal_code || "",
-        price: editingProperty.properties.price,
-        type: editingProperty.properties.type,
-        transaction_type: editingProperty.properties.transaction_type,
-        bedrooms_total: editingProperty.properties.bedrooms_total || "",
-        bathroom_total: editingProperty.properties.bathroom_total || "",
-        sizeInterior: editingProperty.properties.sizeInterior || "",
-        year_built: editingProperty.properties.year_built || "",
-        description: editingProperty.properties.description || "",
-        latitude: String(editingProperty.properties.latitude),
-        longitude: String(editingProperty.properties.longitude),
+        street_address: editingProperty.street_address,
+        city: editingProperty.city,
+        province: editingProperty.province,
+        postal_code: editingProperty.postal_code || "",
+        price: String(editingProperty.price),
+        type: editingProperty.type,
+        transaction_type: editingProperty.transaction_type,
+        bedrooms_total: editingProperty.bedrooms_total?.toString() || "",
+        bathroom_total: editingProperty.bathroom_total?.toString() || "",
+        sizeInterior: editingProperty.sizeInterior || "",
+        year_built: editingProperty.year_built || "",
+        description: editingProperty.description || "",
+        latitude: String(editingProperty.latitude),
+        longitude: String(editingProperty.longitude),
       });
-      if (editingProperty.properties.photo_url) {
-        setImagePreview(editingProperty.properties.photo_url);
+      if (editingProperty.photo_url) {
+        setImagePreview(editingProperty.photo_url);
       }
     }
   }, [editingProperty, form]);
@@ -391,45 +392,79 @@ export function PropertiesMutateDrawer() {
               />
             </div>
 
-            {/* Coordinates */}
-            <div className="grid grid-cols-2 gap-4">
-              <FormField
-                control={form.control}
-                name="latitude"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Latitude</FormLabel>
-                    <FormControl>
-                      <Input
-                        {...field}
-                        type="number"
-                        step="any"
-                        placeholder="43.6532"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+            {/* Location Picker */}
+            <div className="space-y-2">
+              <LocationPicker
+                latitude={form.watch("latitude")}
+                longitude={form.watch("longitude")}
+                onLocationChange={(
+                  lat: number,
+                  lng: number,
+                  address?: string,
+                ) => {
+                  form.setValue("latitude", lat.toString());
+                  form.setValue("longitude", lng.toString());
 
-              <FormField
-                control={form.control}
-                name="longitude"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Longitude</FormLabel>
-                    <FormControl>
-                      <Input
-                        {...field}
-                        type="number"
-                        step="any"
-                        placeholder="-79.3832"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
+                  // Optionally update address fields if they're empty
+                  if (address && !form.getValues("street_address")) {
+                    // Parse address components
+                    const geocoder = new google.maps.Geocoder();
+                    geocoder.geocode({ address }, (results, status) => {
+                      if (status === "OK" && results && results[0]) {
+                        const addressComponents = results[0].address_components;
+
+                        // Extract street address
+                        const streetNumber =
+                          addressComponents.find((c) =>
+                            c.types.includes("street_number"),
+                          )?.long_name || "";
+                        const route =
+                          addressComponents.find((c) =>
+                            c.types.includes("route"),
+                          )?.long_name || "";
+
+                        if (streetNumber && route) {
+                          form.setValue(
+                            "street_address",
+                            `${streetNumber} ${route}`,
+                          );
+                        }
+
+                        // Extract city
+                        const city = addressComponents.find((c) =>
+                          c.types.includes("locality"),
+                        )?.long_name;
+                        if (city && !form.getValues("city")) {
+                          form.setValue("city", city);
+                        }
+
+                        // Extract province
+                        const province = addressComponents.find((c) =>
+                          c.types.includes("administrative_area_level_1"),
+                        )?.short_name;
+                        if (province && !form.getValues("province")) {
+                          form.setValue("province", province);
+                        }
+
+                        // Extract postal code
+                        const postalCode = addressComponents.find((c) =>
+                          c.types.includes("postal_code"),
+                        )?.long_name;
+                        if (postalCode && !form.getValues("postal_code")) {
+                          form.setValue("postal_code", postalCode);
+                        }
+                      }
+                    });
+                  }
+                }}
               />
+              {(form.formState.errors.latitude ||
+                form.formState.errors.longitude) && (
+                <p className="text-sm font-medium text-destructive">
+                  {form.formState.errors.latitude?.message ||
+                    form.formState.errors.longitude?.message}
+                </p>
+              )}
             </div>
 
             {/* Description */}

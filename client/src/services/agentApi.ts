@@ -1,17 +1,16 @@
 import { api } from "./api";
+import type { User as UserType } from "../types";
+import type { Property } from "./propertyApi";
 
 export interface DashboardStats {
   totalProperties: number;
-  recentProperties: any[];
+  recentProperties: Property[];
   totalUsers: number;
-}
-
-export interface User {
-  _id: string;
-  name: string;
-  email: string;
-  role: string;
-  phoneNumber?: string;
+  totalInterests: number;
+  pendingInterests: number;
+  closedInterests: number;
+  monthlyInterests: { _id: { month: number; year: number }; count: number }[];
+  propertiesByType: { _id: string; count: number }[];
 }
 
 export const agentApi = api.injectEndpoints({
@@ -20,15 +19,15 @@ export const agentApi = api.injectEndpoints({
       query: () => "/properties/agent/stats",
       providesTags: ["DashboardStats"],
     }),
-    getAgentProperties: builder.query<any[], void>({
+    getAgentProperties: builder.query<Property[], void>({
       query: () => "/properties/agent/properties",
       providesTags: ["AgentProperties"],
     }),
-    getUsers: builder.query<User[], void>({
+    getUsers: builder.query<UserType[], void>({
       query: () => "/users",
       providesTags: ["Users"],
     }),
-    createProperty: builder.mutation<any, FormData>({
+    createProperty: builder.mutation<Property, FormData>({
       query: (formData) => ({
         url: "/properties",
         method: "POST",
@@ -36,7 +35,10 @@ export const agentApi = api.injectEndpoints({
       }),
       invalidatesTags: ["AgentProperties", "DashboardStats"],
     }),
-    updateProperty: builder.mutation<any, { id: string; formData: FormData }>({
+    updateProperty: builder.mutation<
+      Property,
+      { id: string; formData: FormData }
+    >({
       query: ({ id, formData }) => ({
         url: `/properties/${id}`,
         method: "PUT",
@@ -44,20 +46,27 @@ export const agentApi = api.injectEndpoints({
       }),
       invalidatesTags: ["AgentProperties", "DashboardStats"],
     }),
-    deleteProperty: builder.mutation<any, string>({
+    deleteProperty: builder.mutation<{ message: string }, string>({
       query: (id) => ({
         url: `/properties/${id}`,
         method: "DELETE",
       }),
       invalidatesTags: ["AgentProperties", "DashboardStats"],
     }),
-    bulkDeleteProperties: builder.mutation<any, string[]>({
+    bulkDeleteProperties: builder.mutation<{ message: string }, string[]>({
       query: (ids) => ({
         url: "/properties/bulk",
         method: "DELETE",
         body: { ids },
       }),
       invalidatesTags: ["AgentProperties", "DashboardStats"],
+    }),
+    getAgentFavorites: builder.query<
+      { property: Property; users: UserType[] }[],
+      void
+    >({
+      query: () => "/properties/agent/favorites",
+      providesTags: ["Property"],
     }),
   }),
 });
@@ -70,4 +79,5 @@ export const {
   useUpdatePropertyMutation,
   useDeletePropertyMutation,
   useBulkDeletePropertiesMutation,
+  useGetAgentFavoritesQuery,
 } = agentApi;

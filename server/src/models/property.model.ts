@@ -20,9 +20,9 @@ const PropertyDetailsSchema = new Schema({
   province: { type: String, required: true },
   postal_code: { type: String },
   community_name: { type: String },
-  bedrooms_total: { type: String },
-  bathroom_total: { type: String },
-  price: { type: String, required: true },
+  bedrooms_total: { type: Number },
+  bathroom_total: { type: Number },
+  price: { type: Number, required: true },
   type: { type: String },
   transaction_type: { type: String },
   last_updated: { type: Number },
@@ -82,9 +82,9 @@ export interface IProperty extends Document {
     province: string;
     postal_code: string;
     community_name: string | null;
-    bedrooms_total: string;
-    bathroom_total: string;
-    price: string;
+    bedrooms_total: number;
+    bathroom_total: number;
+    price: number;
     type: string;
     transaction_type: string;
     last_updated: number;

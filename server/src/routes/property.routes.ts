@@ -5,39 +5,38 @@ import {
   getSimilarProperties,
   addToWishlist,
   removeFromWishlist,
+  getSavedProperties,
   createProperty,
   updateProperty,
   getAgentProperties,
   getDashboardStats,
   deleteProperty,
   bulkDeleteProperties,
+  getAgentFavoritedProperties,
 } from "../controllers/property.controller";
-import { isAgent } from "../middlewares/auth.middleware";
+import { isAgent, isClient } from "../middlewares/auth.middleware";
 import { upload } from "../middlewares/upload.middleware";
 
 const router = Router();
 
+// Client routes (Wishlist)
+router.get("/properties/saved", isClient, getSavedProperties);
+router.post("/properties/wishlist/:id", isClient, addToWishlist);
+router.delete("/properties/wishlist/:id", isClient, removeFromWishlist);
+
 // Public routes
-router.get("/", getProperties);
-router.get("/similar/:id", getSimilarProperties);
-router.get("/:id", getPropertyById); // This needs to be after specific paths if they conflict, but here IDs are usually safe.
-
-// User routes (Wishlist - assuming all authenticated users can use this, need to check if we want to restrict)
-// The original file had no middleware here, but the controller uses req.user.id.
-// I should probably add generic auth middleware here, but I will focus on Agent routes as requested.
-// Wait, the user request said: "read my backend logic first and add all agent related apis"
-// I will verify if generic auth middleware is needed. Usually yes.
-// For now, I'll stick to the requested changes.
-
-router.post("/wishlist/:id", addToWishlist);
-router.delete("/wishlist/:id", removeFromWishlist);
+router.get("/properties", getProperties);
+router.get("/properties/similar/:id", getSimilarProperties);
+router.get("/properties/:id", getPropertyById);
 
 // Agent routes
-router.get("/agent/stats", isAgent, getDashboardStats); // More specific route first
-router.get("/agent/properties", isAgent, getAgentProperties);
-router.post("/", isAgent, upload.single("image"), createProperty);
-router.put("/:id", isAgent, upload.single("image"), updateProperty);
-router.delete("/bulk", isAgent, bulkDeleteProperties); // Bulk delete must come before /:id
-router.delete("/:id", isAgent, deleteProperty);
+router.get("/properties/agent/stats", isAgent, getDashboardStats);
+router.get("/properties/agent/properties", isAgent, getAgentProperties);
+router.post("/properties", isAgent, upload.single("image"), createProperty);
+router.put("/properties/:id", isAgent, upload.single("image"), updateProperty);
+router.delete("/properties/bulk", isAgent, bulkDeleteProperties);
+router.delete("/properties/:id", isAgent, deleteProperty);
+
+router.get("/agent/favorites", isAgent, getAgentFavoritedProperties);
 
 export default router;

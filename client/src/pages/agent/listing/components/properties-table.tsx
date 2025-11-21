@@ -51,11 +51,11 @@ export function PropertiesTable({ data }: PropertiesTableProps) {
     const transactionFilter = searchParams.get("transaction");
 
     if (typeFilter) {
-      filters.push({ id: "properties.type", value: typeFilter.split(",") });
+      filters.push({ id: "type", value: typeFilter.split(",") });
     }
     if (transactionFilter) {
       filters.push({
-        id: "properties.transaction_type",
+        id: "transaction_type",
         value: transactionFilter.split(","),
       });
     }
@@ -91,10 +91,10 @@ export function PropertiesTable({ data }: PropertiesTableProps) {
     const params = new URLSearchParams(searchParams);
 
     newFilters.forEach((filter) => {
-      if (filter.id === "properties.type" && Array.isArray(filter.value)) {
+      if (filter.id === "type" && Array.isArray(filter.value)) {
         params.set("type", filter.value.join(","));
       } else if (
-        filter.id === "properties.transaction_type" &&
+        filter.id === "transaction_type" &&
         Array.isArray(filter.value)
       ) {
         params.set("transaction", filter.value.join(","));
@@ -102,10 +102,10 @@ export function PropertiesTable({ data }: PropertiesTableProps) {
     });
 
     // Remove params if no filter
-    if (!newFilters.find((f) => f.id === "properties.type")) {
+    if (!newFilters.find((f) => f.id === "type")) {
       params.delete("type");
     }
-    if (!newFilters.find((f) => f.id === "properties.transaction_type")) {
+    if (!newFilters.find((f) => f.id === "transaction_type")) {
       params.delete("transaction");
     }
 
@@ -139,10 +139,8 @@ export function PropertiesTable({ data }: PropertiesTableProps) {
     onSortingChange: setSorting,
     onColumnVisibilityChange: setColumnVisibility,
     globalFilterFn: (row, _columnId, filterValue) => {
-      const address = String(
-        row.original.properties.street_address,
-      ).toLowerCase();
-      const city = String(row.original.properties.city).toLowerCase();
+      const address = String(row.original.street_address).toLowerCase();
+      const city = String(row.original.city).toLowerCase();
       const searchValue = String(filterValue).toLowerCase();
 
       return address.includes(searchValue) || city.includes(searchValue);
@@ -170,12 +168,12 @@ export function PropertiesTable({ data }: PropertiesTableProps) {
         searchPlaceholder="Filter by address or city..."
         filters={[
           {
-            columnId: "properties.type",
+            columnId: "type",
             title: "Type",
             options: propertyTypes,
           },
           {
-            columnId: "properties.transaction_type",
+            columnId: "transaction_type",
             title: "Transaction",
             options: transactionTypes,
           },

@@ -66,7 +66,7 @@ export function PropertiesDialogs() {
             <AlertDialogDescription>
               This will permanently delete the property at{" "}
               <span className="font-medium">
-                {deletingProperty?.properties.street_address}
+                {deletingProperty?.street_address}
               </span>
               . This action cannot be undone.
             </AlertDialogDescription>

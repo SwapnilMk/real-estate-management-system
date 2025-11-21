@@ -9,10 +9,13 @@ import About from "@/pages/client/about";
 import Contact from "@/pages/client/contact";
 import ListingsPage from "@/pages/client/listing";
 import PropertyDetailPage from "@/pages/client/property-detail";
+import OurListingsPage from "@/pages/client/our-listings";
 import MapSearchPage from "@/pages/client/map-search";
 import DashboardPage from "@/pages/agent/dashboard/dashboard";
 import MyProperties from "@/pages/agent/listing/listing";
 import UserList from "@/pages/agent/user/user-list";
+import InterestList from "@/pages/agent/user/interest-list";
+import FavoritesPage from "@/pages/agent/favorites/favorites";
 import DashboardLayout from "@/components/layout/dashboard-layout";
 
 const MainLayout = lazy(() => import("@/components/layout/main-layout"));
@@ -32,6 +35,7 @@ export const router = createBrowserRouter(
         { path: "/about", element: <About /> },
         { path: "/contact", element: <Contact /> },
         { path: "/listings", element: <ListingsPage /> },
+        { path: "/our-listings", element: <OurListingsPage /> },
         { path: "/listings/:id", element: <PropertyDetailPage /> },
         { path: "/map-search", element: <MapSearchPage /> },
         {
@@ -50,7 +54,9 @@ export const router = createBrowserRouter(
           children: [
             { index: true, element: <DashboardPage /> },
             { path: "listings", element: <MyProperties /> },
+            { path: "favorites", element: <FavoritesPage /> },
             { path: "clients", element: <UserList /> },
+            { path: "inquiries", element: <InterestList /> },
           ],
         },
       ],

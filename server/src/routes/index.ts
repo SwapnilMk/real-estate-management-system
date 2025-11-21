@@ -2,12 +2,14 @@ import express from "express";
 import authRoutes from "./auth.routes";
 import propertyRoutes from "./property.routes";
 import userRoutes from "./user.routes";
+import interestRoutes from "./interest.routes";
 
 const router = express.Router();
 
 // authentication Routes
 router.use("/auth", authRoutes);
-router.use("/properties", propertyRoutes);
+router.use("/", propertyRoutes); // Properties routes include /properties prefix
 router.use("/users", userRoutes);
+router.use("/", interestRoutes); // Interest routes include their own prefixes
 
 export default router;

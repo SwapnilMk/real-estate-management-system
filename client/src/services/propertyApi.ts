@@ -3,15 +3,18 @@ import { api } from "./api";
 
 export interface Property {
   id: string;
+  _id: string;
   listing_id: string;
   street_address: string;
   city: string;
   province: string;
   postal_code: string;
-  price: string;
-  bedrooms_total: string;
-  bathroom_total: string;
+  price: number;
+  bedrooms_total: number;
+  bathroom_total: number;
   type: string;
+  transaction_type: string;
+  last_updated: number;
   photo_url: string;
   sizeInterior?: string;
   year_built?: string;
@@ -21,6 +24,8 @@ export interface Property {
   all_photos?: Record<string, string>;
   interiorFeatures?: string[];
   exteriorFeatures?: string[];
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export const propertyApi = api.injectEndpoints({
@@ -65,6 +70,60 @@ export const propertyApi = api.injectEndpoints({
       query: (id) => `/properties/similar?id=${id}`,
       providesTags: ["Similar"],
     }),
+    addToWishlist: builder.mutation<void, string>({
+      query: (propertyId) => ({
+        url: `/properties/wishlist/${propertyId}`,
+        method: "POST",
+      }),
+      invalidatesTags: ["Wishlist"],
+      async onQueryStarted(propertyId, { dispatch, queryFulfilled }) {
+        const patchResult = dispatch(
+          propertyApi.util.updateQueryData(
+            "getUserWishlist",
+            undefined,
+            (draft) => {
+              // Optimistically add to wishlist (using a partial object casted to Property)
+              // We only need the ID for the map-search page to update the icon
+              if (!draft.find((p) => p.id === propertyId)) {
+                draft.push({ id: propertyId } as Property);
+              }
+            },
+          ),
+        );
+        try {
+          await queryFulfilled;
+        } catch {
+          patchResult.undo();
+        }
+      },
+    }),
+    removeFromWishlist: builder.mutation<void, string>({
+      query: (propertyId) => ({
+        url: `/properties/wishlist/${propertyId}`,
+        method: "DELETE",
+      }),
+      invalidatesTags: ["Wishlist"],
+      async onQueryStarted(propertyId, { dispatch, queryFulfilled }) {
+        const patchResult = dispatch(
+          propertyApi.util.updateQueryData(
+            "getUserWishlist",
+            undefined,
+            (draft) => {
+              return draft.filter((p) => p.id !== propertyId);
+            },
+          ),
+        );
+        try {
+          await queryFulfilled;
+        } catch {
+          patchResult.undo();
+        }
+      },
+    }),
+    getUserWishlist: builder.query<Property[], void>({
+      query: () => "/properties/saved",
+      providesTags: ["Wishlist"],
+    }),
   }),
 });
 
@@ -72,4 +131,7 @@ export const {
   useGetPropertiesQuery,
   useGetPropertyByIdQuery,
   useGetSimilarPropertiesQuery,
+  useAddToWishlistMutation,
+  useRemoveFromWishlistMutation,
+  useGetUserWishlistQuery,
 } = propertyApi;

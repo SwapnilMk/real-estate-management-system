@@ -33,24 +33,24 @@ export const propertiesColumns: ColumnDef<Property>[] = [
     enableHiding: false,
   },
   {
-    accessorKey: "properties.photo_url",
+    accessorKey: "photo_url",
     header: "Image",
     cell: ({ row }) => (
       <Avatar className="h-10 w-10 rounded-md">
         <AvatarImage
-          src={row.original.properties.photo_url}
-          alt={row.original.properties.street_address}
+          src={row?.original?.photo_url}
+          alt={row?.original?.street_address}
           className="object-cover"
         />
         <AvatarFallback className="rounded-md">
-          {row.original.properties.type.charAt(0)}
+          {row?.original?.type?.charAt(0)}
         </AvatarFallback>
       </Avatar>
     ),
     enableSorting: false,
   },
   {
-    accessorKey: "properties.street_address",
+    accessorKey: "street_address",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Address" />
     ),
@@ -58,22 +58,22 @@ export const propertiesColumns: ColumnDef<Property>[] = [
       return (
         <div className="flex flex-col">
           <span className="max-w-[200px] truncate font-medium sm:max-w-[300px] md:max-w-[400px]">
-            {row.original.properties.street_address}
+            {row?.original?.street_address}
           </span>
           <span className="text-muted-foreground text-xs">
-            {row.original.properties.city}, {row.original.properties.province}
+            {row?.original?.city}, {row?.original?.province}
           </span>
         </div>
       );
     },
   },
   {
-    accessorKey: "properties.price",
+    accessorKey: "price",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Price" />
     ),
     cell: ({ row }) => {
-      const price = parseFloat(row.original.properties.price);
+      const price = row.original.price;
       const formatted = new Intl.NumberFormat("en-US", {
         style: "currency",
         currency: "USD",
@@ -84,17 +84,17 @@ export const propertiesColumns: ColumnDef<Property>[] = [
     },
   },
   {
-    accessorKey: "properties.type",
+    accessorKey: "type",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Type" />
     ),
     cell: ({ row }) => {
       const propertyType = propertyTypes.find(
-        (type) => type.value === row.original.properties.type,
+        (type) => type.value === row.original.type,
       );
 
       if (!propertyType) {
-        return <Badge variant="outline">{row.original.properties.type}</Badge>;
+        return <Badge variant="outline">{row.original.type}</Badge>;
       }
 
       return (
@@ -105,21 +105,21 @@ export const propertiesColumns: ColumnDef<Property>[] = [
       );
     },
     filterFn: (row, _id, value) => {
-      return value.includes(row.original.properties.type);
+      return value.includes(row.original.type);
     },
   },
   {
-    accessorKey: "properties.transaction_type",
+    accessorKey: "transaction_type",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Transaction" />
     ),
     cell: ({ row }) => {
       const transactionType = transactionTypes.find(
-        (type) => type.value === row.original.properties.transaction_type,
+        (type) => type.value === row.original.transaction_type,
       );
 
       if (!transactionType) {
-        return <Badge>{row.original.properties.transaction_type}</Badge>;
+        return <Badge>{row.original.transaction_type}</Badge>;
       }
 
       return (
@@ -130,17 +130,17 @@ export const propertiesColumns: ColumnDef<Property>[] = [
       );
     },
     filterFn: (row, _id, value) => {
-      return value.includes(row.original.properties.transaction_type);
+      return value.includes(row.original.transaction_type);
     },
   },
   {
-    accessorKey: "properties.bedrooms_total",
+    accessorKey: "bedrooms_total",
     header: ({ column }) => (
       <DataTableColumnHeader column={column} title="Beds/Baths" />
     ),
     cell: ({ row }) => {
-      const beds = row.original.properties.bedrooms_total || "N/A";
-      const baths = row.original.properties.bathroom_total || "N/A";
+      const beds = row.original.bedrooms_total ?? "N/A";
+      const baths = row.original.bathroom_total ?? "N/A";
       return (
         <div className="text-sm">
           {beds} / {baths}

@@ -40,10 +40,10 @@ const data = {
       icon: IconHeart,
     },
     {
-      title: "Inbox & Leads",
-      url: "/dashboard/inbox",
+      title: "Inquiries",
+      url: "/dashboard/inquiries",
       icon: IconMessageCircle,
-      badge: "8",
+      badge: "New",
     },
     {
       title: "My Clients",
@@ -55,12 +55,12 @@ const data = {
   navSecondary: [
     {
       title: "Settings",
-      url: "/dashboard/settings",
+      url: "/dashboard",
       icon: IconSettings,
     },
     {
       title: "Notifications",
-      url: "/dashboard/notifications",
+      url: "/dashboard",
       icon: IconBell,
       badge: "3",
     },

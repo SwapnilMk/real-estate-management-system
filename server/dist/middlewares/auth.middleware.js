@@ -7,7 +7,11 @@ exports.isAgent = exports.isClient = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const config_1 = __importDefault(require("../config/config"));
 const isClient = (req, res, next) => {
-    const token = req.cookies.jwt;
+    // Check header first, then cookie
+    let token = req.headers.authorization?.split(" ")[1];
+    if (!token) {
+        token = req.cookies.jwt;
+    }
     if (token) {
         try {
             const decoded = jsonwebtoken_1.default.verify(token, config_1.default.JWT_ACCESS_SECRET);

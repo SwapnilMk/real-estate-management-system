@@ -119,7 +119,7 @@ export function PropertyCard({ property }: PropertyCardProps) {
         <p className="text-sm text-muted-foreground truncate">
           {city}, {province}
         </p>
-        <p className="text-xs text-muted-foreground mt-2">MLS® {listing_id}</p>
+        <p className="text-xs text-muted-foreground mt-2">ID® {listing_id}</p>
       </div>
       <Link to={`/listings/${id}`} className="absolute inset-0">
         <span className="sr-only">View property details</span>

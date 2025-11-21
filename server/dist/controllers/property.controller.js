@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.bulkDeleteProperties = exports.deleteProperty = exports.getDashboardStats = exports.getAgentProperties = exports.updateProperty = exports.createProperty = exports.removeFromWishlist = exports.addToWishlist = exports.getSimilarProperties = exports.getPropertyById = exports.getProperties = void 0;
+exports.getAgentFavoritedProperties = exports.bulkDeleteProperties = exports.deleteProperty = exports.getDashboardStats = exports.getAgentProperties = exports.updateProperty = exports.createProperty = exports.getSavedProperties = exports.removeFromWishlist = exports.addToWishlist = exports.getSimilarProperties = exports.getPropertyById = exports.getProperties = void 0;
 const property_service_1 = require("../services/property.service");
 const upload_middleware_1 = require("../middlewares/upload.middleware");
 const getProperties = async (req, res) => {
@@ -25,10 +25,15 @@ const getPropertyById = async (req, res) => {
 exports.getPropertyById = getPropertyById;
 const getSimilarProperties = async (req, res) => {
     try {
-        const properties = await (0, property_service_1.getSimilarProperties)(req.params.id);
+        const id = req.query.id || req.params.id;
+        if (!id) {
+            return res.status(400).json({ message: "Property ID is required" });
+        }
+        const properties = await (0, property_service_1.getSimilarProperties)(id);
         res.json(properties);
     }
     catch (error) {
+        console.error("Error in getSimilarProperties:", error);
         res.status(500).json({ message: "Error fetching similar properties" });
     }
 };
@@ -53,6 +58,16 @@ const removeFromWishlist = async (req, res) => {
     }
 };
 exports.removeFromWishlist = removeFromWishlist;
+const getSavedProperties = async (req, res) => {
+    try {
+        const properties = await (0, property_service_1.getSavedProperties)(req.user.id);
+        res.json(properties);
+    }
+    catch (error) {
+        res.status(500).json({ message: "Error fetching saved properties" });
+    }
+};
+exports.getSavedProperties = getSavedProperties;
 const createProperty = async (req, res) => {
     try {
         let photoUrl = "";
@@ -74,9 +89,9 @@ const createProperty = async (req, res) => {
                 province,
                 postal_code,
                 community_name,
-                bedrooms_total,
-                bathroom_total,
-                price,
+                bedrooms_total: Number(bedrooms_total),
+                bathroom_total: Number(bathroom_total),
+                price: Number(price),
                 type,
                 transaction_type,
                 last_updated: Date.now(),
@@ -229,3 +244,14 @@ const bulkDeleteProperties = async (req, res) => {
     }
 };
 exports.bulkDeleteProperties = bulkDeleteProperties;
+const getAgentFavoritedProperties = async (req, res) => {
+    try {
+        const favorites = await (0, property_service_1.getAgentFavoritedProperties)(req.user.id);
+        res.json(favorites);
+    }
+    catch (error) {
+        console.error(error);
+        res.status(500).json({ message: "Error fetching agent favorites" });
+    }
+};
+exports.getAgentFavoritedProperties = getAgentFavoritedProperties;

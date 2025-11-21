@@ -1,5 +1,6 @@
 import Property from "../models/property.model";
 import User from "../models/user.model";
+import mongoose from "mongoose";
 import { ParsedQs } from "qs";
 
 // Helper to flatten the GeoJSON property structure for the frontend
@@ -10,6 +11,7 @@ const flattenProperty = (doc: any) => {
     ...obj.properties,
     id: obj._id, // Use the Mongo ID as the main ID
     _id: obj._id,
+    user: obj.agentId, // Include populated agent details
   };
 };
 
@@ -26,29 +28,29 @@ export const getProperties = async (query: ParsedQs) => {
   } = query;
 
   const filter: any = {};
-  if (type) filter["properties.type"] = type;
-  if (minPrice) filter["properties.price"] = { $gte: minPrice };
-  if (maxPrice)
-    filter["properties.price"] = {
-      ...filter["properties.price"],
-      $lte: maxPrice,
-    };
-  if (beds) filter["properties.bedrooms_total"] = { $gte: beds };
-  if (propertyType) filter["properties.type"] = propertyType;
+  // if (type) filter["properties.type"] = type;
+  // if (minPrice) filter["properties.price"] = { $gte: Number(minPrice) };
+  // if (maxPrice)
+  //   filter["properties.price"] = {
+  //     ...filter["properties.price"],
+  //     $lte: Number(maxPrice),
+  //   };
+  // if (beds) filter["properties.bedrooms_total"] = { $gte: Number(beds) };
+  // if (propertyType) filter["properties.type"] = propertyType;
 
-  if (bounds) {
-    const [swLng, swLat, neLng, neLat] = (bounds as string)
-      .split(",")
-      .map(parseFloat);
-    filter.geometry = {
-      $geoWithin: {
-        $box: [
-          [swLng, swLat],
-          [neLng, neLat],
-        ],
-      },
-    };
-  }
+  // if (bounds) {
+  //   const [swLng, swLat, neLng, neLat] = (bounds as string)
+  //     .split(",")
+  //     .map(parseFloat);
+  //   filter.geometry = {
+  //     $geoWithin: {
+  //       $box: [
+  //         [swLng, swLat],
+  //         [neLng, neLat],
+  //       ],
+  //     },
+  //   };
+  // }
 
   const properties = await Property.find(filter)
     .limit(Number(limit))
@@ -63,18 +65,41 @@ export const getProperties = async (query: ParsedQs) => {
 };
 
 export const getPropertyById = async (id: string) => {
-  const property = await Property.findById(id);
+  let property;
+
+  // Check if it's a listing_id (starts with 'L') or MongoDB ObjectId
+  if (id.startsWith("L")) {
+    property = await Property.findOne({ "properties.listing_id": id }).populate(
+      "agentId",
+      "name email phone",
+    );
+  } else {
+    property = await Property.findById(id).populate(
+      "agentId",
+      "name email phone",
+    );
+  }
+
   return flattenProperty(property);
 };
 
 export const getSimilarProperties = async (id: string) => {
-  const property = await Property.findById(id);
+  let property;
+
+  // Check if it's a listing_id (starts with 'L') or MongoDB ObjectId
+  if (id.startsWith("L")) {
+    property = await Property.findOne({ "properties.listing_id": id });
+  } else {
+    property = await Property.findById(id);
+  }
+
   if (!property) return [];
 
-  const similar = await Property.find({
-    "properties.type": property.properties.type,
-    _id: { $ne: id },
-  }).limit(3);
+  // User requested "randoms only"
+  const similar = await Property.aggregate([
+    { $match: { _id: { $ne: property._id } } },
+    { $sample: { size: 3 } },
+  ]);
 
   return similar.map(flattenProperty);
 };
@@ -98,6 +123,16 @@ export const removeFromWishlist = async (
   );
 };
 
+/**
+ * Get user's saved/wishlist properties
+ */
+export const getSavedProperties = async (userId: string) => {
+  const user = await User.findById(userId).populate("savedHomes");
+  if (!user) throw new Error("User not found");
+
+  return user.savedHomes.map(flattenProperty);
+};
+
 export const createProperty = async (propertyData: any, agentId: string) => {
   const newProperty = new Property({
     ...propertyData,
@@ -114,40 +149,77 @@ export const updateProperty = async (
   const property = await Property.findById(id);
   if (!property) throw new Error("Property not found");
 
-  // Although checking if the agent owns the property is good practice,
-  // for now we might allow admins to edit all properties or check ownership here.
-  // Assuming agent can only edit their own properties:
   if (property.agentId && property.agentId.toString() !== agentId) {
     throw new Error("Not authorized to update this property");
   }
-
-  // If properties was not originally created with agentId (legacy data),
-  // we might need a policy. For now, strict check if agentId exists on property.
 
   return await Property.findByIdAndUpdate(id, propertyData, { new: true });
 };
 
 export const getAgentProperties = async (agentId: string) => {
-  return await Property.find({ agentId });
+  const properties = await Property.find({ agentId });
+  return properties.map(flattenProperty);
 };
 
 export const getDashboardStats = async (agentId: string) => {
   const totalProperties = await Property.countDocuments({ agentId });
-  const recentProperties = await Property.find({ agentId })
+  const recentPropertiesDocs = await Property.find({ agentId })
     .sort({ createdAt: -1 })
     .limit(5);
+  const recentProperties = recentPropertiesDocs.map(flattenProperty);
 
-  // For "users listed", assuming the requirement "agent can see users listed"
-  // means all users in the system or users related to the agent.
-  // Based on the prompt "agent can see users listed totoal property recent property",
-  // it implies a general view or users contacted.
-  // I'll include totalUsers count here as well if needed, but we have a separate route for users.
-  const totalUsers = await User.countDocuments({ role: "CLIENT" }); // Count only clients maybe?
+  // Import Interest model dynamically to avoid circular dependency
+  const Interest = (await import("../models/interest.model")).default;
+
+  const totalInterests = await Interest.countDocuments({ agentId });
+  const pendingInterests = await Interest.countDocuments({
+    agentId,
+    status: "pending",
+  });
+  const closedInterests = await Interest.countDocuments({
+    agentId,
+    status: "closed",
+  });
+
+  // Monthly interests aggregation (last 6 months)
+  const sixMonthsAgo = new Date();
+  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+
+  const monthlyInterests = await Interest.aggregate([
+    {
+      $match: {
+        agentId: new mongoose.Types.ObjectId(agentId),
+        createdAt: { $gte: sixMonthsAgo },
+      },
+    },
+    {
+      $group: {
+        _id: {
+          month: { $month: "$createdAt" },
+          year: { $year: "$createdAt" },
+        },
+        count: { $sum: 1 },
+      },
+    },
+    { $sort: { "_id.year": 1, "_id.month": 1 } },
+  ]);
+
+  const propertiesByType = await Property.aggregate([
+    { $match: { agentId: new mongoose.Types.ObjectId(agentId) } },
+    { $group: { _id: "$properties.type", count: { $sum: 1 } } },
+  ]);
+
+  const totalUsers = await User.countDocuments({ role: "CLIENT" });
 
   return {
     totalProperties,
     recentProperties,
     totalUsers,
+    totalInterests,
+    pendingInterests,
+    closedInterests,
+    monthlyInterests,
+    propertiesByType,
   };
 };
 
@@ -155,7 +227,6 @@ export const deleteProperty = async (id: string, agentId: string) => {
   const property = await Property.findById(id);
   if (!property) throw new Error("Property not found");
 
-  // Check if the agent owns the property
   if (property.agentId && property.agentId.toString() !== agentId) {
     throw new Error("Not authorized to delete this property");
   }
@@ -164,10 +235,8 @@ export const deleteProperty = async (id: string, agentId: string) => {
 };
 
 export const bulkDeleteProperties = async (ids: string[], agentId: string) => {
-  // Find all properties and verify ownership
   const properties = await Property.find({ _id: { $in: ids } });
 
-  // Check if all properties belong to the agent
   const unauthorized = properties.some(
     (property) => property.agentId && property.agentId.toString() !== agentId,
   );
@@ -177,4 +246,46 @@ export const bulkDeleteProperties = async (ids: string[], agentId: string) => {
   }
 
   return await Property.deleteMany({ _id: { $in: ids }, agentId });
+};
+
+export const getAgentFavoritedProperties = async (agentId: string) => {
+  // 1. Find all properties belonging to the agent
+  const agentProperties = await Property.find({ agentId }).select(
+    "_id properties",
+  );
+
+  if (!agentProperties.length) return [];
+
+  const propertyIds = agentProperties.map((p) => p._id);
+
+  // 2. Find users who have these properties in their savedHomes
+  const users = await User.find({
+    savedHomes: { $in: propertyIds },
+    role: "CLIENT",
+  }).select("name email phoneNumber savedHomes");
+
+  // 3. Map properties to the users who favorited them
+  const result = agentProperties
+    .map((property) => {
+      const interestedUsers = users.filter((user) =>
+        user.savedHomes.some(
+          (savedId) => savedId.toString() === property._id.toString(),
+        ),
+      );
+
+      if (interestedUsers.length === 0) return null;
+
+      return {
+        property: flattenProperty(property),
+        users: interestedUsers.map((u) => ({
+          _id: u._id,
+          name: u.name,
+          email: u.email,
+          phoneNumber: u.phoneNumber,
+        })),
+      };
+    })
+    .filter((item) => item !== null); // Only return properties that have been favorited
+
+  return result;
 };

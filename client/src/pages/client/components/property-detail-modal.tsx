@@ -168,7 +168,7 @@ export function PropertyDetailModal({
                   <p>{type}</p>
                 </div>
                 <div>
-                  <p className="text-muted-foreground">MLS® Number</p>
+                  <p className="text-muted-foreground">ID® Number</p>
                   <p>{listing_id}</p>
                 </div>
                 <div>
