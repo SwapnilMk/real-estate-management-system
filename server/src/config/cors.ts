@@ -5,6 +5,9 @@ import logger from "./logger";
 // allowed Origin URLs for CORS
 const allowedOrigins: string[] = [
   "https://real-estate-management-web.vercel.app/",
+  "http://real-estate-management-web.vercel.app/",
+  "https://real-estate-management-web.vercel.app",
+  "http://real-estate-management-web.vercel.app",
   config.FRONTEND_URL,
   "http://localhost:5173",
   "http://localhost:5174",

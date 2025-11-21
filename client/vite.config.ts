@@ -11,4 +11,11 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  server: {
+    proxy: {
+      "/api": {
+        target: "https://real-estate-management-system-n0p9.onrender.com",
+      },
+    },
+  },
 });
