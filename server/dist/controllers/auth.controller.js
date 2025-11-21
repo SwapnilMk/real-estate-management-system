@@ -7,10 +7,20 @@ exports.logout = logout;
 exports.requestPasswordReset = requestPasswordReset;
 exports.resetPassword = resetPassword;
 const auth_service_1 = require("../services/auth.service");
+const upload_middleware_1 = require("../middlewares/upload.middleware");
 // registration controller
 async function register(req, res) {
     try {
-        const { user, accessToken, refreshToken } = await (0, auth_service_1.registerService)(req.body);
+        let avatarUrl = "";
+        if (req.file) {
+            const result = await (0, upload_middleware_1.uploadToCloudinary)(req.file);
+            avatarUrl = result.secure_url;
+        }
+        const userData = {
+            ...req.body,
+            avatar: avatarUrl,
+        };
+        const { user, accessToken, refreshToken } = await (0, auth_service_1.registerService)(userData);
         res.cookie("refreshToken", refreshToken, auth_service_1.COOKIE_OPTIONS);
         return res.status(201).json({
             message: "Registration successful",
@@ -19,6 +29,7 @@ async function register(req, res) {
                 name: user.name,
                 email: user.email,
                 role: user.role,
+                avatar: user.avatar,
             },
             accessToken,
         });
@@ -40,6 +51,7 @@ async function login(req, res) {
                 name: user.name,
                 email: user.email,
                 role: user.role,
+                avatar: user.avatar,
             },
             accessToken,
         });

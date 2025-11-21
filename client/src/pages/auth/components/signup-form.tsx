@@ -30,18 +30,36 @@ export function SignupForm() {
     },
   });
 
-  const onSubmit = async (data: z.infer<typeof SignupSchema>) => {
+  const onSubmit = async (
+    data: z.infer<typeof SignupSchema> & {
+      avatar?: FileList;
+      phoneNumber?: string;
+    },
+  ) => {
     try {
-      const result = await registerUser({
-        name: data.name,
-        email: data.email,
-        password: data.password,
-        role: data.role,
-      }).unwrap();
+      const formData = new FormData();
+      formData.append("name", data.name);
+      formData.append("email", data.email);
+      formData.append("password", data.password);
+      formData.append("role", data.role);
+      if (data.phoneNumber) {
+        formData.append("phoneNumber", data.phoneNumber);
+      }
+      if (data.avatar && data.avatar.length > 0) {
+        formData.append("avatar", data.avatar[0]);
+      }
+
+      const result = await registerUser(formData).unwrap();
 
       dispatch(setCredentials(result));
       toast.success("Registration successful");
-      navigate("/");
+
+      // Redirect based on user role
+      if (result.user.role === "AGENT") {
+        navigate("/dashboard");
+      } else {
+        navigate("/");
+      }
     } catch (err: any) {
       toast.error(err.data?.message || "Registration failed");
     }
@@ -60,12 +78,38 @@ export function SignupForm() {
         {/* Name */}
         <div className="space-y-2">
           <Label htmlFor="name">Full Name</Label>
-          <Input id="name" placeholder="John Doe" {...form.register("name")} />
+          <Input
+            id="name"
+            placeholder="Enter your Name"
+            {...form.register("name")}
+          />
           {form.formState.errors.name && (
             <p className="text-red-500 text-sm">
               {form.formState.errors.name.message}
             </p>
           )}
+        </div>
+
+        {/* Phone Number */}
+        <div className="space-y-2">
+          <Label htmlFor="phoneNumber">Phone Number</Label>
+          <Input
+            id="phoneNumber"
+            type="tel"
+            placeholder="+1 234 567 8900"
+            {...form.register("phoneNumber")}
+          />
+        </div>
+
+        {/* Profile Photo */}
+        <div className="space-y-2">
+          <Label htmlFor="avatar">Profile Photo</Label>
+          <Input
+            id="avatar"
+            type="file"
+            accept="image/*"
+            {...form.register("avatar")}
+          />
         </div>
 
         {/* Email */}

@@ -48,6 +48,7 @@ const UserSchema = new mongoose_1.Schema({
         enum: ["AGENT", "CLIENT"],
         default: "CLIENT",
     },
+    avatar: { type: String },
     resetPasswordToken: { type: String },
     resetPasswordExpires: { type: Date },
     phoneNumber: { type: String },

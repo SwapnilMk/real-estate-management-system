@@ -1,6 +1,15 @@
 import { motion } from "framer-motion";
-import { ArrowRight, ChevronDown } from "lucide-react";
+import {
+  ArrowRight,
+  Search,
+  Heart,
+  TrendingUp,
+  Shield,
+  Users,
+  Building2,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Link } from "react-router-dom";
 import Hero from "@/assets/hero.png";
 import Background from "@/assets/background.jpg";
 
@@ -32,24 +41,34 @@ const Home = () => {
             className="space-y-6"
           >
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-white">
-              Find Your Dream Home With Real Estate Realtors
+              Discover Your Perfect Property Today
             </h1>
 
             <p className="text-lg text-white max-w-md">
-              Whether you're buying your first home or looking for a premium
-              investment property, we make real estate simple and stress-free.
+              Browse thousands of verified listings, connect with trusted
+              agents, and find your dream home with our comprehensive real
+              estate platform.
             </p>
 
             <p className="text-lg text-gray-200">
-              Explore top residential locations, compare properties, and get
-              expert guidance to make the right real estate decisions with
-              confidence.
+              From residential homes to commercial properties, we provide a
+              seamless experience for buyers, sellers, and agents alike.
             </p>
 
-            <Button className="group text-md px-6 py-6 bg-black text-white mt-4">
-              Schedule a Call
-              <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-            </Button>
+            <div className="flex flex-wrap gap-4 mt-6">
+              <Link to="/listings">
+                <Button className="group text-md px-6 py-6 bg-primary text-white hover:bg-primary/90">
+                  Browse Listings
+                  <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+                </Button>
+              </Link>
+
+              <Link to="/sign-in">
+                <Button className="group text-md px-6 py-6 bg-primary text-white hover:bg-primary/90">
+                  Sign In
+                </Button>
+              </Link>
+            </div>
           </motion.div>
 
           {/* RIGHT IMAGE CARD */}
@@ -70,13 +89,14 @@ const Home = () => {
               />
 
               <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/80 p-6 text-white">
-                <h3 className="font-bold text-center">
-                  Your Trusted Real Estate Consultant
+                <h3 className="font-bold text-center text-lg">
+                  Your Trusted Real Estate Platform
                 </h3>
 
-                <div className="mt-2 flex items-center justify-between gap-4">
-                  <span className="text-sm">📞 7057332679</span>
-                  <span className="text-xs">📩 mswapnil218@gmail.com</span>
+                <div className="mt-2 flex items-center justify-center gap-6 text-sm">
+                  <span>🏠 1000+ Properties</span>
+                  <span>✓ Verified Listings</span>
+                  <span>👥 Expert Agents</span>
                 </div>
               </div>
             </div>
@@ -94,25 +114,26 @@ const Home = () => {
           variants={fadeUp}
         >
           <h2 className="text-3xl font-bold">
-            Trusted Real Estate Expertise You Can Rely On
+            Your Complete Real Estate Solution
           </h2>
 
           <p className="text-lg text-muted-foreground">
-            With years of experience in residential real estate, Real Estate
-            helps clients buy, sell, and invest in top properties with complete
-            transparency and market expertise.
+            Our platform connects property seekers with verified listings and
+            professional agents, making real estate transactions transparent,
+            efficient, and hassle-free.
           </p>
 
           <p className="text-lg text-muted-foreground">
-            From property search to closing, we ensure a smooth, professional,
-            and personalized experience for every client.
+            Whether you're buying your first home, selling a property, or
+            managing listings as an agent, we provide all the tools you need in
+            one place.
           </p>
         </motion.div>
       </section>
 
       {/* SERVICES SECTION */}
       <section className="py-16 px-4">
-        <div className="container mx-auto">
+        <div className="container mx-auto max-w-7xl">
           <motion.div
             className="text-center mb-12"
             initial="hidden"
@@ -121,40 +142,62 @@ const Home = () => {
             variants={fadeUp}
           >
             <h2 className="text-sm font-semibold uppercase tracking-wider text-primary">
-              SERVICES
+              PLATFORM FEATURES
             </h2>
 
             <h3 className="mt-2 text-3xl font-bold">
-              Real Estate Services We Offer
+              Everything You Need in One Place
             </h3>
 
             <p className="mt-4 mx-auto max-w-2xl text-lg text-muted-foreground">
-              Buying or selling a home can be overwhelming—our team ensures you
-              get the right guidance and support every step of the way.
+              Our comprehensive platform offers powerful features for property
+              seekers, sellers, and agents to streamline the entire real estate
+              process.
             </p>
           </motion.div>
 
           <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-8">
             {[
               {
-                title: "Buy a Home",
+                icon: Search,
+                title: "Advanced Property Search",
                 description:
-                  "Find your ideal property with expert market insights, verified listings, and step-by-step guidance.",
+                  "Filter by location, price, type, and amenities to find exactly what you're looking for from our extensive database.",
               },
               {
-                title: "Sell Your Property",
+                icon: Heart,
+                title: "Save & Track Favorites",
                 description:
-                  "Sell faster and at the best price with strategic marketing, negotiation skills, and professional staging.",
+                  "Create your personalized wishlist, track properties, and get instant notifications when prices change.",
               },
               {
+                icon: Building2,
+                title: "Agent Listings Management",
+                description:
+                  "Agents can easily list, update, and manage properties with our intuitive dashboard and analytics tools.",
+              },
+              {
+                icon: Users,
+                title: "Direct Agent Connection",
+                description:
+                  "Express interest and connect directly with verified agents to schedule viewings and get expert guidance.",
+              },
+              {
+                icon: TrendingUp,
                 title: "Market Insights",
                 description:
-                  "Get accurate property valuations and market trends to make informed investment decisions.",
+                  "Access real-time property valuations, market trends, and neighborhood data to make informed decisions.",
+              },
+              {
+                icon: Shield,
+                title: "Verified Listings",
+                description:
+                  "All properties are verified by our team to ensure accuracy, legitimacy, and up-to-date information.",
               },
             ].map((item, i) => (
               <motion.div
                 key={i}
-                className="group relative overflow-hidden rounded-lg border bg-background p-6 shadow-sm hover:shadow-md"
+                className="group relative overflow-hidden rounded-lg border bg-background p-6 shadow-sm hover:shadow-md transition-all"
                 initial="hidden"
                 whileInView="show"
                 viewport={{ once: true }}
@@ -162,12 +205,10 @@ const Home = () => {
               >
                 <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-primary/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
 
-                <h3 className="text-xl font-bold">{item.title}</h3>
-                <p className="mt-2 text-muted-foreground">{item.description}</p>
-
-                <div className="mt-4 flex items-center text-primary">
-                  <span className="text-sm font-medium">Learn more</span>
-                  <ArrowRight className="ml-1 h-4 w-4" />
+                <div className="relative">
+                  <item.icon className="h-10 w-10 text-primary mb-4" />
+                  <h3 className="text-xl font-bold mb-2">{item.title}</h3>
+                  <p className="text-muted-foreground">{item.description}</p>
                 </div>
               </motion.div>
             ))}
@@ -175,7 +216,7 @@ const Home = () => {
         </div>
       </section>
 
-      {/* WHY CHOOSE ME SECTION */}
+      {/* WHY CHOOSE US SECTION */}
       <section className="py-16 bg-black text-white px-4">
         <div className="container mx-auto">
           <motion.div
@@ -187,13 +228,13 @@ const Home = () => {
           >
             <h2 className="text-sm font-semibold uppercase">WHY CHOOSE US</h2>
             <h3 className="mt-2 text-3xl font-bold">
-              Why Clients Trust Real Estate
+              The Smart Way to Buy, Sell & Manage Properties
             </h3>
           </motion.div>
 
           <div className="grid md:grid-cols-2 gap-12 items-center">
             <motion.div
-              className="space-y-8"
+              className="space-y-6"
               initial="hidden"
               whileInView="show"
               viewport={{ once: true }}
@@ -201,28 +242,28 @@ const Home = () => {
             >
               {[
                 {
-                  title: "Honest Guidance",
-                  desc: "We believe in transparency and ensure you get unbiased advice at every step.",
+                  title: "Comprehensive Database",
+                  desc: "Access thousands of verified property listings with detailed information, photos, and accurate pricing.",
                 },
                 {
-                  title: "Financial Assistance",
-                  desc: "Get support with home loan options, EMI planning, and trusted mortgage partners.",
+                  title: "User-Friendly Platform",
+                  desc: "Intuitive interface designed for both property seekers and agents, making navigation and management effortless.",
                 },
                 {
-                  title: "Strong Network",
-                  desc: "Work with experienced legal advisors, inspectors, and real estate specialists.",
+                  title: "Secure & Transparent",
+                  desc: "All listings are verified, and transactions are tracked to ensure complete transparency and security.",
                 },
                 {
-                  title: "Expert Negotiation",
-                  desc: "We negotiate the best deals for you—whether buying or selling.",
+                  title: "Professional Agent Network",
+                  desc: "Connect with experienced, verified agents who provide expert guidance throughout your real estate journey.",
                 },
               ].map((item, i) => (
                 <div key={i} className="space-y-2">
-                  <div className="flex items-center gap-2">
-                    <h4 className="text-xl font-bold">{item.title}</h4>
-                    <ChevronDown className="h-5 w-5" />
-                  </div>
-                  <p className="text-gray-300">{item.desc}</p>
+                  <h4 className="text-xl font-bold flex items-center gap-2">
+                    <span className="text-primary">✓</span>
+                    {item.title}
+                  </h4>
+                  <p className="text-gray-300 pl-7">{item.desc}</p>
                 </div>
               ))}
             </motion.div>
@@ -232,12 +273,20 @@ const Home = () => {
               whileInView="show"
               viewport={{ once: true }}
               variants={fadeUp}
-              className="flex justify-center"
+              className="flex flex-col gap-4 justify-center"
             >
-              <Button className="group text-lg px-8 py-6 bg-white text-black hover:bg-white/90">
-                Book A Consultation
-                <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
-              </Button>
+              <Link to="/listings" className="w-full">
+                <Button className="group text-lg px-8 py-6 bg-white text-black hover:bg-white/90 w-full">
+                  Explore Properties
+                  <ArrowRight className="ml-2 h-5 w-5 transition-transform group-hover:translate-x-1" />
+                </Button>
+              </Link>
+
+              <Link to="/sign-up" className="w-full">
+                <Button className="group text-lg px-8 py-6 bg-white text-black hover:bg-white/90 w-full">
+                  Create Account
+                </Button>
+              </Link>
             </motion.div>
           </div>
         </div>
@@ -253,23 +302,28 @@ const Home = () => {
           variants={fadeUp}
         >
           <h2 className="text-3xl font-bold">
-            Let’s Help You Buy or Sell Your Property With Ease
+            Ready to Find Your Dream Property?
           </h2>
 
           <p className="text-lg text-muted-foreground">
-            Your real estate goals deserve expert support. Work with a
-            professional who puts your needs first.
+            Join thousands of satisfied users who have found their perfect homes
+            through our platform. Start your real estate journey today.
           </p>
 
-          <p className="text-lg">
-            Contact us today and get end-to-end assistance for buying, selling,
-            or investing in premium properties.
-          </p>
+          <div className="flex flex-wrap gap-4 justify-center mt-6">
+            <Link to="/sign-up">
+              <Button className="group text-md px-6 py-6 bg-black text-white hover:bg-black/90">
+                Get Started Free
+                <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
+              </Button>
+            </Link>
 
-          <Button className="group text-md px-6 py-6 bg-black text-white">
-            Partner With Us
-            <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-          </Button>
+            <Link to="/listings">
+              <Button variant="outline" className="text-md px-6 py-6">
+                View All Listings
+              </Button>
+            </Link>
+          </div>
         </motion.div>
       </section>
     </>

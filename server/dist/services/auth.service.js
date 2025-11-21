@@ -22,11 +22,18 @@ exports.COOKIE_OPTIONS = {
 };
 // User Register Service
 async function registerService(data) {
-    const { name, email, password, role } = data;
+    const { name, email, password, role, phoneNumber, avatar } = data;
     const existing = await user_model_1.default.findOne({ email });
     if (existing)
         throw new Error("Email already registered");
-    const user = new user_model_1.default({ name, email, password, role });
+    const user = new user_model_1.default({
+        name,
+        email,
+        password,
+        role,
+        phoneNumber,
+        avatar,
+    });
     await user.save();
     const accessToken = (0, jwt_1.signAccessToken)({ id: user._id, role: user.role });
     const refreshToken = (0, jwt_1.signRefreshToken)({ id: user._id });

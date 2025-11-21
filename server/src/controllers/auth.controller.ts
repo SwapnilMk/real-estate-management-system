@@ -7,11 +7,23 @@ import {
   resetPasswordService,
   COOKIE_OPTIONS,
 } from "../services/auth.service";
+import { uploadToCloudinary } from "../middlewares/upload.middleware";
 
 // registration controller
 export async function register(req: Request, res: Response) {
   try {
-    const { user, accessToken, refreshToken } = await registerService(req.body);
+    let avatarUrl = "";
+    if (req.file) {
+      const result: any = await uploadToCloudinary(req.file);
+      avatarUrl = result.secure_url;
+    }
+
+    const userData = {
+      ...req.body,
+      avatar: avatarUrl,
+    };
+
+    const { user, accessToken, refreshToken } = await registerService(userData);
 
     res.cookie("refreshToken", refreshToken, COOKIE_OPTIONS);
 
@@ -22,6 +34,7 @@ export async function register(req: Request, res: Response) {
         name: user.name,
         email: user.email,
         role: user.role,
+        avatar: user.avatar,
       },
       accessToken,
     });
@@ -48,6 +61,7 @@ export async function login(req: Request, res: Response) {
         name: user.name,
         email: user.email,
         role: user.role,
+        avatar: user.avatar,
       },
       accessToken,
     });

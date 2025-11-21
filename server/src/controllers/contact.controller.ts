@@ -1,0 +1,67 @@
+import { Request, Response } from "express";
+import {
+  createContactMessage,
+  getAllContactMessages,
+} from "../services/contact.service";
+
+/**
+ * Submit a new contact message
+ * POST /contact
+ * Public endpoint - no authentication required
+ */
+export async function submitContactMessage(req: Request, res: Response) {
+  try {
+    const { name, email, message } = req.body;
+
+    // Validate request body
+    if (!name || !email || !message) {
+      return res.status(400).json({
+        success: false,
+        message: "All fields are required",
+      });
+    }
+
+    // Create contact message
+    const contact = await createContactMessage({ name, email, message });
+
+    return res.status(201).json({
+      success: true,
+      message: "Message sent successfully! We'll get back to you soon.",
+      data: {
+        id: contact._id,
+        name: contact.name,
+        email: contact.email,
+        createdAt: contact.createdAt,
+      },
+    });
+  } catch (err: any) {
+    console.error("Contact submission error:", err);
+    return res.status(500).json({
+      success: false,
+      message: err.message || "Failed to send message. Please try again later.",
+    });
+  }
+}
+
+/**
+ * Get all contact messages
+ * GET /contacts
+ * Protected endpoint - agents only
+ */
+export async function getContactMessages(req: Request, res: Response) {
+  try {
+    const contacts = await getAllContactMessages();
+
+    return res.status(200).json({
+      success: true,
+      data: contacts,
+      count: contacts.length,
+    });
+  } catch (err: any) {
+    console.error("Get contacts error:", err);
+    return res.status(500).json({
+      success: false,
+      message: err.message || "Failed to fetch contact messages.",
+    });
+  }
+}

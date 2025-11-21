@@ -71,9 +71,19 @@ exports.getSavedProperties = getSavedProperties;
 const createProperty = async (req, res) => {
     try {
         let photoUrl = "";
-        if (req.file) {
-            const result = await (0, upload_middleware_1.uploadToCloudinary)(req.file);
-            photoUrl = result.secure_url;
+        const allPhotos = {};
+        if (req.files && Array.isArray(req.files)) {
+            const uploadPromises = req.files.map(async (file) => {
+                const result = await (0, upload_middleware_1.uploadToCloudinary)(file);
+                return result.secure_url;
+            });
+            const uploadedUrls = await Promise.all(uploadPromises);
+            if (uploadedUrls.length > 0) {
+                photoUrl = uploadedUrls[0]; // Set the first image as the main photo
+                uploadedUrls.forEach((url, index) => {
+                    allPhotos[`photo_${index + 1}`] = url;
+                });
+            }
         }
         const propertyData = req.body;
         // Since body is multipart/form-data, nested objects might need parsing if sent as JSON strings
@@ -102,6 +112,7 @@ const createProperty = async (req, res) => {
                 longitude: Number(longitude),
                 listing_id: `L${Date.now()}`,
                 photo_url: photoUrl,
+                all_photos: allPhotos,
                 description,
                 year_built,
             },
@@ -122,20 +133,32 @@ exports.createProperty = createProperty;
 const updateProperty = async (req, res) => {
     try {
         const propertyData = req.body;
-        // Handle file upload if new image provided
-        if (req.file) {
-            const result = await (0, upload_middleware_1.uploadToCloudinary)(req.file);
-            // We need to update the photo_url in the properties object
-            // The structure of update depends on how we receive data.
-            // Assuming we receive fields to update.
-            // If we are updating, we need to reconstruct the nested structure or use dot notation.
-            // Using dot notation for MongoDB updates is safer.
-            propertyData["properties.photo_url"] = result.secure_url;
+        const updateObj = {};
+        // Handle file upload if new images provided
+        if (req.files && Array.isArray(req.files) && req.files.length > 0) {
+            const uploadPromises = req.files.map(async (file) => {
+                const result = await (0, upload_middleware_1.uploadToCloudinary)(file);
+                return result.secure_url;
+            });
+            const uploadedUrls = await Promise.all(uploadPromises);
+            if (uploadedUrls.length > 0) {
+                // Update main photo
+                updateObj["properties.photo_url"] = uploadedUrls[0];
+                // Update all_photos map.
+                // Note: This replaces existing photos if we strictly follow this logic.
+                // A more complex logic would be needed to append or replace specific indices.
+                // For this implementation, we'll assume a full replace of the gallery if new images are sent,
+                // or we could merge. Let's just set the new map for now.
+                const allPhotos = {};
+                uploadedUrls.forEach((url, index) => {
+                    allPhotos[`photo_${index + 1}`] = url;
+                });
+                updateObj["properties.all_photos"] = allPhotos;
+            }
         }
         // Mongoose findByIdAndUpdate with flat keys for nested objects requires flattened keys.
         // Or we can merge the data.
         // For simplicity, let's assume we construct the update object.
-        const updateObj = {};
         const nestedFields = [
             "city",
             "province",
@@ -159,9 +182,6 @@ const updateProperty = async (req, res) => {
                 updateObj[`properties.${field}`] = propertyData[field];
             }
         });
-        if (propertyData["properties.photo_url"]) {
-            updateObj["properties.photo_url"] = propertyData["properties.photo_url"];
-        }
         if (propertyData.latitude && propertyData.longitude) {
             updateObj.geometry = {
                 type: "Point",
@@ -175,9 +195,10 @@ const updateProperty = async (req, res) => {
         res.json(updatedProperty);
     }
     catch (error) {
-        console.error(error);
-        if (error.message === "Not authorized to update this property") {
-            res.status(403).json({ message: error.message });
+        const err = error;
+        console.error(err);
+        if (err.message === "Not authorized to update this property") {
+            res.status(403).json({ message: err.message });
         }
         else {
             res.status(500).json({ message: "Error updating property" });
@@ -211,12 +232,13 @@ const deleteProperty = async (req, res) => {
         res.json({ message: "Property deleted successfully" });
     }
     catch (error) {
-        console.error(error);
-        if (error.message === "Not authorized to delete this property") {
-            res.status(403).json({ message: error.message });
+        const err = error;
+        console.error(err);
+        if (err.message === "Not authorized to delete this property") {
+            res.status(403).json({ message: err.message });
         }
-        else if (error.message === "Property not found") {
-            res.status(404).json({ message: error.message });
+        else if (err.message === "Property not found") {
+            res.status(404).json({ message: err.message });
         }
         else {
             res.status(500).json({ message: "Error deleting property" });
@@ -234,9 +256,10 @@ const bulkDeleteProperties = async (req, res) => {
         res.json({ message: `${ids.length} properties deleted successfully` });
     }
     catch (error) {
-        console.error(error);
-        if (error.message === "Not authorized to delete one or more properties") {
-            res.status(403).json({ message: error.message });
+        const err = error;
+        console.error(err);
+        if (err.message === "Not authorized to delete one or more properties") {
+            res.status(403).json({ message: err.message });
         }
         else {
             res.status(500).json({ message: "Error deleting properties" });

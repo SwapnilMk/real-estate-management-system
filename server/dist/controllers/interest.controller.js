@@ -13,11 +13,12 @@ const createInterest = async (req, res) => {
         res.status(201).json(interest);
     }
     catch (error) {
-        if (error.message === "Property not found") {
-            res.status(404).json({ message: error.message });
+        const err = error;
+        if (err.message === "Property not found") {
+            res.status(404).json({ message: err.message });
         }
-        else if (error.message === "You have already expressed interest in this property") {
-            res.status(400).json({ message: error.message });
+        else if (err.message === "You have already expressed interest in this property") {
+            res.status(400).json({ message: err.message });
         }
         else {
             console.error(error);
@@ -71,11 +72,12 @@ const updateInterestStatus = async (req, res) => {
         res.json(interest);
     }
     catch (error) {
-        if (error.message === "Interest not found") {
-            res.status(404).json({ message: error.message });
+        const err = error;
+        if (err.message === "Interest not found") {
+            res.status(404).json({ message: err.message });
         }
-        else if (error.message === "Not authorized to update this interest") {
-            res.status(403).json({ message: error.message });
+        else if (err.message === "Not authorized to update this interest") {
+            res.status(403).json({ message: err.message });
         }
         else {
             console.error(error);
@@ -94,11 +96,12 @@ const deleteInterest = async (req, res) => {
         res.json({ message: "Interest deleted successfully" });
     }
     catch (error) {
-        if (error.message === "Interest not found") {
-            res.status(404).json({ message: error.message });
+        const err = error;
+        if (err.message === "Interest not found") {
+            res.status(404).json({ message: err.message });
         }
-        else if (error.message === "Not authorized to delete this interest") {
-            res.status(403).json({ message: error.message });
+        else if (err.message === "Not authorized to delete this interest") {
+            res.status(403).json({ message: err.message });
         }
         else {
             console.error(error);

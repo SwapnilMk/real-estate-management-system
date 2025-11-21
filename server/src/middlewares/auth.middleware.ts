@@ -2,19 +2,19 @@ import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import config from "../config/config";
 
-interface JwtUser extends jwt.JwtPayload {
-  id?: string;
+export interface JwtUser extends jwt.JwtPayload {
+  id: string;
   _id?: string;
-  role?: string;
+  role: "AGENT" | "CLIENT";
   user?: JwtUser;
   [key: string]: any;
 }
 
-interface AuthRequest extends Request {
+export interface AuthRequest extends Request {
   user?: JwtUser;
 }
 
-export const isClient = (
+export const isAuthenticated = (
   req: AuthRequest,
   res: Response,
   next: NextFunction,

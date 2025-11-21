@@ -163,11 +163,6 @@ export function PropertyList({
             </div>
           </div>
         )}
-        <div className="lg:container lg:mx-auto mt-8 mx-0 px-2">
-          <p className="text-xs mt-5 text-muted-foreground">
-            Real Group Realty, Brokerage...
-          </p>
-        </div>
       </div>
     </ScrollArea>
   );

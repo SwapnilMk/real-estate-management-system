@@ -3,10 +3,10 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.isAgent = exports.isClient = void 0;
+exports.isAgent = exports.isAuthenticated = void 0;
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const config_1 = __importDefault(require("../config/config"));
-const isClient = (req, res, next) => {
+const isAuthenticated = (req, res, next) => {
     // Check header first, then cookie
     let token = req.headers.authorization?.split(" ")[1];
     if (!token) {
@@ -26,7 +26,7 @@ const isClient = (req, res, next) => {
         res.status(401).json({ message: "Not authorized, no token" });
     }
 };
-exports.isClient = isClient;
+exports.isAuthenticated = isAuthenticated;
 const isAgent = (req, res, next) => {
     // Check header first, then cookie
     let token = req.headers.authorization?.split(" ")[1];

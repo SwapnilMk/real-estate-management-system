@@ -15,8 +15,8 @@ const containerStyle = {
 };
 
 const defaultCenter = {
-  lat: 49.1913,
-  lng: -122.849,
+  lat: 20.5937,
+  lng: 78.9629,
 };
 
 interface PropertyMapProps {
@@ -112,7 +112,7 @@ export default function PropertyMap({ onLoadingChange }: PropertyMapProps) {
     <GoogleMap
       mapContainerStyle={containerStyle}
       center={defaultCenter}
-      zoom={12}
+      zoom={5}
       onLoad={onLoad}
       onUnmount={onUnmount}
       onBoundsChanged={onBoundsChanged}

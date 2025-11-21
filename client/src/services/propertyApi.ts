@@ -44,6 +44,7 @@ export const propertyApi = api.injectEndpoints({
         beds?: string;
         propertyType?: string;
         bounds?: string;
+        location?: string;
       }
     >({
       query: (params) => {
@@ -57,6 +58,7 @@ export const propertyApi = api.injectEndpoints({
         if (params.propertyType)
           searchParams.append("propertyType", params.propertyType);
         if (params.bounds) searchParams.append("bounds", params.bounds);
+        if (params.location) searchParams.append("location", params.location);
 
         return `/properties?${searchParams.toString()}`;
       },

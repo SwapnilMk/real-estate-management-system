@@ -9,14 +9,35 @@ import {
 import { usePropertyStore } from "@/lib/store";
 import { Input } from "@/components/ui/input";
 
+import { useState } from "react";
+
 export function MapFilters() {
   const { filters, setFilter, resetFilters } = usePropertyStore();
+  const [searchTerm, setSearchTerm] = useState(filters.location || "");
+
+  const handleSearch = () => {
+    setFilter("location", searchTerm);
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter") {
+      handleSearch();
+    }
+  };
 
   return (
     <div className="p-4 border-b space-y-4 bg-background z-10">
       <div className="flex gap-2">
-        <Input placeholder="Search location..." className="flex-1" />
-        <Button variant="outline">Search</Button>
+        <Input
+          placeholder="Search location..."
+          className="flex-1"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          onKeyDown={handleKeyDown}
+        />
+        <Button variant="outline" onClick={handleSearch}>
+          Search
+        </Button>
       </div>
 
       <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">

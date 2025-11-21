@@ -15,8 +15,8 @@ const containerStyle = {
 };
 
 const defaultCenter = {
-  lat: 49.1913,
-  lng: -122.849,
+  lat: 20.5937, // Center of India
+  lng: 78.9629,
 };
 
 const libraries: "places"[] = ["places"];
@@ -52,7 +52,11 @@ export function LocationPicker({
       const lat = parseFloat(latitude);
       const lng = parseFloat(longitude);
       if (!isNaN(lat) && !isNaN(lng)) {
-        setMarkerPosition({ lat, lng });
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+        setMarkerPosition((prev) => {
+          if (prev && prev.lat === lat && prev.lng === lng) return prev;
+          return { lat, lng };
+        });
       }
     }
   }, [latitude, longitude]);
@@ -133,6 +137,9 @@ export function LocationPicker({
         <Autocomplete
           onLoad={onAutocompleteLoad}
           onPlaceChanged={onPlaceChanged}
+          options={{
+            componentRestrictions: { country: "in" }, // Restrict to India
+          }}
         >
           <Input
             ref={searchInputRef}
@@ -148,7 +155,7 @@ export function LocationPicker({
         <GoogleMap
           mapContainerStyle={containerStyle}
           center={markerPosition || defaultCenter}
-          zoom={markerPosition ? 15 : 12}
+          zoom={markerPosition ? 15 : 5}
           onLoad={onLoad}
           onUnmount={onUnmount}
           onClick={onMapClick}

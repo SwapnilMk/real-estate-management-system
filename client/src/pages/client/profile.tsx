@@ -1,20 +1,22 @@
+import { useState } from "react";
 import { useSelector } from "react-redux";
 import { useGetUserWishlistQuery } from "@/services/propertyApi";
 import { PropertyCard } from "@/components/property-card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Card, CardContent } from "@/components/ui/card";
-import { Loader, Heart, User, Mail, Shield } from "lucide-react";
+import { Loader, Heart, User, Mail, Shield, Phone, Edit } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import type { RootState } from "@/store/store";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { InquiryList } from "./components/inquiry-list";
+import { EditProfileDialog } from "./components/edit-profile-dialog";
+import { ChangePasswordDialog } from "./components/change-password-dialog";
 export default function ClientProfile() {
   const { user } = useSelector((state: RootState) => state.auth);
-
-  // Fetch wishlist data
-  // The skip condition is technically redundant because this page is protected,
-  // but it's good practice.
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [isChangePasswordDialogOpen, setIsChangePasswordDialogOpen] =
+    useState(false);
   const {
     data: wishlist,
     isLoading,
@@ -26,7 +28,7 @@ export default function ClientProfile() {
   const initials = user?.name?.charAt(0)?.toUpperCase() || "U";
 
   if (!user) {
-    return null; // Should be handled by ProtectedRoute
+    return null;
   }
 
   return (
@@ -43,7 +45,7 @@ export default function ClientProfile() {
             <Card className="overflow-hidden border-none shadow-lg">
               <CardContent className="p-6 flex flex-col items-center text-center pt-8">
                 <Avatar className="h-24 w-24 mb-4 border-4 border-background shadow-sm">
-                  <AvatarImage src="" />
+                  <AvatarImage src={user.avatar || ""} />
                   <AvatarFallback className="text-2xl bg-primary/10 text-primary">
                     {initials}
                   </AvatarFallback>
@@ -63,11 +65,34 @@ export default function ClientProfile() {
                     <Mail className="h-4 w-4 text-muted-foreground" />
                     <span className="truncate">{user.email}</span>
                   </div>
+                  {user.phoneNumber && (
+                    <div className="flex items-center gap-3 text-sm p-2 rounded-md hover:bg-muted/50 transition-colors">
+                      <Phone className="h-4 w-4 text-muted-foreground" />
+                      <span className="truncate">{user.phoneNumber}</span>
+                    </div>
+                  )}
                   <div className="flex items-center gap-3 text-sm p-2 rounded-md hover:bg-muted/50 transition-colors">
                     <Shield className="h-4 w-4 text-muted-foreground" />
                     <span>Verified User</span>
                   </div>
                 </div>
+
+                <Button
+                  onClick={() => setIsEditDialogOpen(true)}
+                  className="w-full mt-4"
+                  variant="outline"
+                >
+                  <Edit className="h-4 w-4 mr-2" />
+                  Edit Profile
+                </Button>
+
+                <Button
+                  onClick={() => setIsChangePasswordDialogOpen(true)}
+                  className="w-full mt-2"
+                  variant="outline"
+                >
+                  Change Password
+                </Button>
               </CardContent>
             </Card>
           </div>
@@ -80,9 +105,9 @@ export default function ClientProfile() {
                 <TabsTrigger value="inquiries">My Inquiries</TabsTrigger>
               </TabsList>
 
-              <TabsContent value="wishlist" className="space-y-6">
+              <TabsContent value="wishlist" className="space-y-3 mt-6">
                 <div className="flex items-center justify-between">
-                  <h1 className="text-3xl font-bold">My Wishlist</h1>
+                  <h1 className="text-2xl font-bold">My Wishlist</h1>
                   <div className="text-muted-foreground">
                     {wishlist?.length || 0} Saved Properties
                   </div>
@@ -128,9 +153,9 @@ export default function ClientProfile() {
                 )}
               </TabsContent>
 
-              <TabsContent value="inquiries" className="space-y-6">
+              <TabsContent value="inquiries" className="space-y-3 mt-6">
                 <div className="flex items-center justify-between">
-                  <h1 className="text-3xl font-bold">My Inquiries</h1>
+                  <h1 className="text-2xl font-bold">My Inquiries</h1>
                 </div>
                 <InquiryList />
               </TabsContent>
@@ -138,6 +163,21 @@ export default function ClientProfile() {
           </div>
         </div>
       </div>
+
+      {/* Edit Profile Dialog */}
+      {user && (
+        <>
+          <EditProfileDialog
+            open={isEditDialogOpen}
+            onOpenChange={setIsEditDialogOpen}
+            user={user}
+          />
+          <ChangePasswordDialog
+            open={isChangePasswordDialogOpen}
+            onOpenChange={setIsChangePasswordDialogOpen}
+          />
+        </>
+      )}
     </div>
   );
 }

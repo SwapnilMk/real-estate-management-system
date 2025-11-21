@@ -21,13 +21,22 @@ export async function registerService(data: {
   email: string;
   password: string;
   role?: string;
+  phoneNumber?: string;
+  avatar?: string;
 }) {
-  const { name, email, password, role } = data;
+  const { name, email, password, role, phoneNumber, avatar } = data;
 
   const existing = await User.findOne({ email });
   if (existing) throw new Error("Email already registered");
 
-  const user = new User({ name, email, password, role });
+  const user = new User({
+    name,
+    email,
+    password,
+    role,
+    phoneNumber,
+    avatar,
+  });
   await user.save();
 
   const accessToken = signAccessToken({ id: user._id, role: user.role });

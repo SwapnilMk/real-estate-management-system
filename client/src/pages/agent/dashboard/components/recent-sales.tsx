@@ -23,7 +23,7 @@ export function RecentSales({ properties = [] }: RecentSalesProps) {
               </p>
               <p className="text-muted-foreground text-sm">{property.type}</p>
             </div>
-            <div className="font-medium">${property.price}</div>
+            <div className="font-medium">₹{property.price}</div>
           </div>
         </div>
       ))}

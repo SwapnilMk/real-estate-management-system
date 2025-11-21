@@ -32,24 +32,38 @@ var __importStar = (this && this.__importStar) || (function () {
         return result;
     };
 })();
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-const express_1 = __importDefault(require("express"));
-const auth = __importStar(require("../controllers/auth.controller"));
-const upload_middleware_1 = require("../middlewares/upload.middleware");
-const router = express_1.default.Router();
-// user registration route
-router.post("/register", upload_middleware_1.upload.single("avatar"), auth.register);
-// user login route
-router.post("/login", auth.login);
-// user logout route
-router.post("/logout", auth.logout);
-// forgot password route
-router.post("/forgot-password", auth.requestPasswordReset);
-// reset password route
-router.post("/reset-password/:token", auth.resetPassword);
-// refresh token route
-router.post("/refresh", auth.refreshToken);
-exports.default = router;
+const mongoose_1 = __importStar(require("mongoose"));
+const ContactSchema = new mongoose_1.Schema({
+    name: {
+        type: String,
+        required: [true, "Name is required"],
+        trim: true,
+        minlength: [2, "Name must be at least 2 characters"],
+    },
+    email: {
+        type: String,
+        required: [true, "Email is required"],
+        trim: true,
+        lowercase: true,
+        match: [/^\S+@\S+\.\S+$/, "Please provide a valid email"],
+    },
+    message: {
+        type: String,
+        required: [true, "Message is required"],
+        trim: true,
+        minlength: [10, "Message must be at least 10 characters"],
+    },
+    status: {
+        type: String,
+        enum: ["pending", "read", "responded"],
+        default: "pending",
+    },
+}, {
+    timestamps: true,
+});
+// Index for efficient querying
+ContactSchema.index({ createdAt: -1 });
+ContactSchema.index({ status: 1 });
+const Contact = mongoose_1.default.model("Contact", ContactSchema);
+exports.default = Contact;

@@ -15,8 +15,9 @@ import DashboardPage from "@/pages/agent/dashboard/dashboard";
 import MyProperties from "@/pages/agent/listing/listing";
 import UserList from "@/pages/agent/user/user-list";
 import InterestList from "@/pages/agent/user/interest-list";
-import FavoritesPage from "@/pages/agent/favorites/favorites";
+
 import DashboardLayout from "@/components/layout/dashboard-layout";
+import ContactsPage from "@/pages/agent/contacts/contacts";
 
 const MainLayout = lazy(() => import("@/components/layout/main-layout"));
 const Home = lazy(() => import("@/pages"));
@@ -54,9 +55,10 @@ export const router = createBrowserRouter(
           children: [
             { index: true, element: <DashboardPage /> },
             { path: "listings", element: <MyProperties /> },
-            { path: "favorites", element: <FavoritesPage /> },
+
             { path: "clients", element: <UserList /> },
             { path: "inquiries", element: <InterestList /> },
+            { path: "contacts", element: <ContactsPage /> },
           ],
         },
       ],

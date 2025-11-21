@@ -2,11 +2,9 @@ import * as React from "react";
 import {
   IconHome,
   IconBuilding,
-  IconHeart,
   IconMessageCircle,
-  IconSettings,
-  IconBell,
   IconUsers,
+  IconAddressBook,
 } from "@tabler/icons-react";
 
 import {
@@ -18,11 +16,14 @@ import {
   SidebarMenuItem,
 } from "@/components/ui/sidebar";
 import { NavMain } from "./nav-main";
-import { NavSecondary } from "./nav-secondary";
 import { Link } from "react-router-dom";
 
-const data = {
-  navMain: [
+import { useGetDashboardStatsQuery } from "@/services/agentApi";
+
+export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+  const { data: stats } = useGetDashboardStatsQuery();
+
+  const navMain = [
     {
       title: "Dashboard",
       url: "/dashboard",
@@ -32,42 +33,31 @@ const data = {
       title: "My Listings",
       url: "/dashboard/listings",
       icon: IconBuilding,
-      badge: "12",
+      badge: stats?.totalProperties
+        ? stats.totalProperties.toString()
+        : undefined,
     },
-    {
-      title: "Favorites",
-      url: "/dashboard/favorites",
-      icon: IconHeart,
-    },
+
     {
       title: "Inquiries",
       url: "/dashboard/inquiries",
       icon: IconMessageCircle,
-      badge: "New",
+      badge: stats?.pendingInterests
+        ? stats.pendingInterests.toString()
+        : undefined,
     },
     {
-      title: "My Clients",
+      title: "Contacts",
+      url: "/dashboard/contacts",
+      icon: IconAddressBook,
+    },
+    {
+      title: "Clients",
       url: "/dashboard/clients",
       icon: IconUsers,
     },
-  ],
+  ];
 
-  navSecondary: [
-    {
-      title: "Settings",
-      url: "/dashboard",
-      icon: IconSettings,
-    },
-    {
-      title: "Notifications",
-      url: "/dashboard",
-      icon: IconBell,
-      badge: "3",
-    },
-  ],
-};
-
-export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
     <Sidebar collapsible="icon" {...props}>
       {/* ---------- HEADER ---------- */}
@@ -90,8 +80,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       </SidebarHeader>
 
       <SidebarContent>
-        <NavMain items={data.navMain} />
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
+        <NavMain items={navMain} />
       </SidebarContent>
     </Sidebar>
   );

@@ -61,6 +61,7 @@ export const api = createApi({
     "Users",
     "Wishlist",
     "Interest",
+    "Contact",
   ],
   endpoints: () => ({}),
 });

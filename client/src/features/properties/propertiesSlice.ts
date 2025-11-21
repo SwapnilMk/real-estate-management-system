@@ -25,7 +25,7 @@ const initialState: PropertiesState = {
   visibleProperties: [],
   totalVisibleCount: 0,
   filters: {
-    type: "for-sale",
+    type: "any",
     priceRange: "any",
     beds: "any",
     baths: "any",

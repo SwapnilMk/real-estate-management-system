@@ -1,37 +1,4 @@
 "use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || (function () {
-    var ownKeys = function(o) {
-        ownKeys = Object.getOwnPropertyNames || function (o) {
-            var ar = [];
-            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
-            return ar;
-        };
-        return ownKeys(o);
-    };
-    return function (mod) {
-        if (mod && mod.__esModule) return mod;
-        var result = {};
-        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
-        __setModuleDefault(result, mod);
-        return result;
-    };
-})();
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
@@ -39,31 +6,48 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getAgentFavoritedProperties = exports.bulkDeleteProperties = exports.deleteProperty = exports.getDashboardStats = exports.getAgentProperties = exports.updateProperty = exports.createProperty = exports.getSavedProperties = exports.removeFromWishlist = exports.addToWishlist = exports.getSimilarProperties = exports.getPropertyById = exports.getProperties = void 0;
 const property_model_1 = __importDefault(require("../models/property.model"));
 const user_model_1 = __importDefault(require("../models/user.model"));
+const interest_model_1 = __importDefault(require("../models/interest.model"));
 const mongoose_1 = __importDefault(require("mongoose"));
 // Helper to flatten the GeoJSON property structure for the frontend
 const flattenProperty = (doc) => {
     if (!doc)
         return null;
     const obj = doc.toObject ? doc.toObject() : doc;
+    // Handle Map conversion for all_photos if it exists as a Map
+    let all_photos = obj.properties?.all_photos;
+    if (all_photos instanceof Map) {
+        all_photos = Object.fromEntries(all_photos);
+    }
     return {
         ...obj.properties,
+        all_photos,
         id: obj._id, // Use the Mongo ID as the main ID
         _id: obj._id,
         user: obj.agentId, // Include populated agent details
     };
 };
 const getProperties = async (query) => {
-    const { page = 1, limit = 12, type, minPrice, maxPrice, beds, propertyType, bounds, } = query;
+    const { page = 1, limit = 12, type, minPrice, maxPrice, beds, propertyType, bounds, location, } = query;
     const filter = {};
-    // if (type) filter["properties.type"] = type;
-    // if (minPrice) filter["properties.price"] = { $gte: Number(minPrice) };
-    // if (maxPrice)
-    //   filter["properties.price"] = {
-    //     ...filter["properties.price"],
-    //     $lte: Number(maxPrice),
-    //   };
-    // if (beds) filter["properties.bedrooms_total"] = { $gte: Number(beds) };
-    // if (propertyType) filter["properties.type"] = propertyType;
+    if (type && type !== "any")
+        filter["properties.type"] = type;
+    if (minPrice && minPrice !== "any")
+        filter["properties.price"] = {
+            ...filter["properties.price"],
+            $gte: Number(minPrice),
+        };
+    if (maxPrice && maxPrice !== "any")
+        filter["properties.price"] = {
+            ...filter["properties.price"],
+            $lte: Number(maxPrice),
+        };
+    if (beds && beds !== "any")
+        filter["properties.bedrooms_total"] = { $gte: Number(beds) };
+    if (propertyType && propertyType !== "any")
+        filter["properties.type"] = propertyType;
+    if (location) {
+        filter.$text = { $search: location };
+    }
     // if (bounds) {
     //   const [swLng, swLat, neLng, neLat] = (bounds as string)
     //     .split(",")
@@ -79,7 +63,8 @@ const getProperties = async (query) => {
     // }
     const properties = await property_model_1.default.find(filter)
         .limit(Number(limit))
-        .skip((Number(page) - 1) * Number(limit));
+        .skip((Number(page) - 1) * Number(limit))
+        .lean();
     const totalCount = await property_model_1.default.countDocuments(filter);
     return {
         properties: properties.map(flattenProperty),
@@ -91,10 +76,14 @@ const getPropertyById = async (id) => {
     let property;
     // Check if it's a listing_id (starts with 'L') or MongoDB ObjectId
     if (id.startsWith("L")) {
-        property = await property_model_1.default.findOne({ "properties.listing_id": id }).populate("agentId", "name email phone");
+        property = await property_model_1.default.findOne({ "properties.listing_id": id })
+            .populate("agentId", "name email phoneNumber avatar")
+            .lean();
     }
     else {
-        property = await property_model_1.default.findById(id).populate("agentId", "name email phone");
+        property = await property_model_1.default.findById(id)
+            .populate("agentId", "name email phoneNumber avatar")
+            .lean();
     }
     return flattenProperty(property);
 };
@@ -165,21 +154,19 @@ const getDashboardStats = async (agentId) => {
         .sort({ createdAt: -1 })
         .limit(5);
     const recentProperties = recentPropertiesDocs.map(flattenProperty);
-    // Import Interest model dynamically to avoid circular dependency
-    const Interest = (await Promise.resolve().then(() => __importStar(require("../models/interest.model")))).default;
-    const totalInterests = await Interest.countDocuments({ agentId });
-    const pendingInterests = await Interest.countDocuments({
+    const totalInterests = await interest_model_1.default.countDocuments({ agentId });
+    const pendingInterests = await interest_model_1.default.countDocuments({
         agentId,
         status: "pending",
     });
-    const closedInterests = await Interest.countDocuments({
+    const closedInterests = await interest_model_1.default.countDocuments({
         agentId,
         status: "closed",
     });
     // Monthly interests aggregation (last 6 months)
     const sixMonthsAgo = new Date();
     sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-    const monthlyInterests = await Interest.aggregate([
+    const monthlyInterests = await interest_model_1.default.aggregate([
         {
             $match: {
                 agentId: new mongoose_1.default.Types.ObjectId(agentId),

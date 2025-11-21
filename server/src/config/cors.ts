@@ -3,7 +3,12 @@ import config from "./config";
 import logger from "./logger";
 
 // allowed Origin URLs for CORS
-const allowedOrigins: string[] = ["http://localhost:5173", config.FRONTEND_URL];
+const allowedOrigins: string[] = [
+  "http://localhost:5173",
+  "http://localhost:5174",
+  "https://real-estate-management-web.vercel.app/",
+  config.FRONTEND_URL,
+];
 
 const corsOptions: CorsOptions = {
   origin: (origin, callback) => {

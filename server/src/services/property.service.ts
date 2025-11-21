@@ -1,5 +1,6 @@
 import Property from "../models/property.model";
 import User from "../models/user.model";
+import Interest from "../models/interest.model";
 import mongoose from "mongoose";
 import { ParsedQs } from "qs";
 
@@ -7,8 +8,16 @@ import { ParsedQs } from "qs";
 const flattenProperty = (doc: any) => {
   if (!doc) return null;
   const obj = doc.toObject ? doc.toObject() : doc;
+
+  // Handle Map conversion for all_photos if it exists as a Map
+  let all_photos = obj.properties?.all_photos;
+  if (all_photos instanceof Map) {
+    all_photos = Object.fromEntries(all_photos);
+  }
+
   return {
     ...obj.properties,
+    all_photos,
     id: obj._id, // Use the Mongo ID as the main ID
     _id: obj._id,
     user: obj.agentId, // Include populated agent details
@@ -25,18 +34,29 @@ export const getProperties = async (query: ParsedQs) => {
     beds,
     propertyType,
     bounds,
+    location,
   } = query;
 
   const filter: any = {};
-  // if (type) filter["properties.type"] = type;
-  // if (minPrice) filter["properties.price"] = { $gte: Number(minPrice) };
-  // if (maxPrice)
-  //   filter["properties.price"] = {
-  //     ...filter["properties.price"],
-  //     $lte: Number(maxPrice),
-  //   };
-  // if (beds) filter["properties.bedrooms_total"] = { $gte: Number(beds) };
-  // if (propertyType) filter["properties.type"] = propertyType;
+  if (type && type !== "any") filter["properties.type"] = type;
+  if (minPrice && minPrice !== "any")
+    filter["properties.price"] = {
+      ...filter["properties.price"],
+      $gte: Number(minPrice),
+    };
+  if (maxPrice && maxPrice !== "any")
+    filter["properties.price"] = {
+      ...filter["properties.price"],
+      $lte: Number(maxPrice),
+    };
+  if (beds && beds !== "any")
+    filter["properties.bedrooms_total"] = { $gte: Number(beds) };
+  if (propertyType && propertyType !== "any")
+    filter["properties.type"] = propertyType;
+
+  if (location) {
+    filter.$text = { $search: location as string };
+  }
 
   // if (bounds) {
   //   const [swLng, swLat, neLng, neLat] = (bounds as string)
@@ -54,7 +74,8 @@ export const getProperties = async (query: ParsedQs) => {
 
   const properties = await Property.find(filter)
     .limit(Number(limit))
-    .skip((Number(page) - 1) * Number(limit));
+    .skip((Number(page) - 1) * Number(limit))
+    .lean();
 
   const totalCount = await Property.countDocuments(filter);
 
@@ -69,15 +90,13 @@ export const getPropertyById = async (id: string) => {
 
   // Check if it's a listing_id (starts with 'L') or MongoDB ObjectId
   if (id.startsWith("L")) {
-    property = await Property.findOne({ "properties.listing_id": id }).populate(
-      "agentId",
-      "name email phone",
-    );
+    property = await Property.findOne({ "properties.listing_id": id })
+      .populate("agentId", "name email phoneNumber avatar")
+      .lean();
   } else {
-    property = await Property.findById(id).populate(
-      "agentId",
-      "name email phone",
-    );
+    property = await Property.findById(id)
+      .populate("agentId", "name email phoneNumber avatar")
+      .lean();
   }
 
   return flattenProperty(property);
@@ -167,9 +186,6 @@ export const getDashboardStats = async (agentId: string) => {
     .sort({ createdAt: -1 })
     .limit(5);
   const recentProperties = recentPropertiesDocs.map(flattenProperty);
-
-  // Import Interest model dynamically to avoid circular dependency
-  const Interest = (await import("../models/interest.model")).default;
 
   const totalInterests = await Interest.countDocuments({ agentId });
   const pendingInterests = await Interest.countDocuments({

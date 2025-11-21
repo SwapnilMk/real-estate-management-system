@@ -16,17 +16,18 @@ export const createInterest = async (req: Request, res: Response) => {
     const { message } = req.body;
     const interest = await createInterestService(
       req.params.id,
-      req.user.id,
+      req.user!.id,
       message,
     );
     res.status(201).json(interest);
-  } catch (error: any) {
-    if (error.message === "Property not found") {
-      res.status(404).json({ message: error.message });
+  } catch (error: unknown) {
+    const err = error as Error;
+    if (err.message === "Property not found") {
+      res.status(404).json({ message: err.message });
     } else if (
-      error.message === "You have already expressed interest in this property"
+      err.message === "You have already expressed interest in this property"
     ) {
-      res.status(400).json({ message: error.message });
+      res.status(400).json({ message: err.message });
     } else {
       console.error(error);
       res.status(500).json({ message: "Error creating interest" });
@@ -42,7 +43,7 @@ export const getAgentInterests = async (req: Request, res: Response) => {
   try {
     const { status } = req.query;
     const interests = await getAgentInterestsService(
-      req.user.id,
+      req.user!.id,
       status as string,
     );
     res.json(interests);
@@ -58,7 +59,7 @@ export const getAgentInterests = async (req: Request, res: Response) => {
  */
 export const getClientInterests = async (req: Request, res: Response) => {
   try {
-    const interests = await getClientInterestsService(req.user.id);
+    const interests = await getClientInterestsService(req.user!.id);
     res.json(interests);
   } catch (error) {
     console.error(error);
@@ -80,15 +81,16 @@ export const updateInterestStatus = async (req: Request, res: Response) => {
 
     const interest = await updateInterestStatusService(
       req.params.id,
-      req.user.id,
+      req.user!.id,
       status,
     );
     res.json(interest);
-  } catch (error: any) {
-    if (error.message === "Interest not found") {
-      res.status(404).json({ message: error.message });
-    } else if (error.message === "Not authorized to update this interest") {
-      res.status(403).json({ message: error.message });
+  } catch (error: unknown) {
+    const err = error as Error;
+    if (err.message === "Interest not found") {
+      res.status(404).json({ message: err.message });
+    } else if (err.message === "Not authorized to update this interest") {
+      res.status(403).json({ message: err.message });
     } else {
       console.error(error);
       res.status(500).json({ message: "Error updating interest" });
@@ -102,13 +104,14 @@ export const updateInterestStatus = async (req: Request, res: Response) => {
  */
 export const deleteInterest = async (req: Request, res: Response) => {
   try {
-    await deleteInterestService(req.params.id, req.user.id);
+    await deleteInterestService(req.params.id, req.user!.id);
     res.json({ message: "Interest deleted successfully" });
-  } catch (error: any) {
-    if (error.message === "Interest not found") {
-      res.status(404).json({ message: error.message });
-    } else if (error.message === "Not authorized to delete this interest") {
-      res.status(403).json({ message: error.message });
+  } catch (error: unknown) {
+    const err = error as Error;
+    if (err.message === "Interest not found") {
+      res.status(404).json({ message: err.message });
+    } else if (err.message === "Not authorized to delete this interest") {
+      res.status(403).json({ message: err.message });
     } else {
       console.error(error);
       res.status(500).json({ message: "Error deleting interest" });

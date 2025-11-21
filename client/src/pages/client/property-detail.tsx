@@ -4,11 +4,11 @@ import { Button } from "@/components/ui/button";
 import {
   Share2,
   MapPin,
-  Phone,
   ChevronLeft,
   ChevronRight,
   Lock,
   Heart,
+  User,
 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useMediaQuery } from "@/hooks/use-media-query";
@@ -22,7 +22,8 @@ import {
 import { toast } from "sonner";
 import { useSelector } from "react-redux";
 import type { RootState } from "@/store/store";
-import { ContactAgentDialog } from "./components/contact-agent-dialog";
+import { AgentContactDialog } from "./components/agent-contact-dialog";
+import { SinglePropertyMap } from "@/components/single-property-map";
 
 /**
  * NOTE: Developer provided asset path (local to environment).
@@ -36,11 +37,14 @@ const ImageWithFallback = ({
   src,
   alt,
   ...props
-}: { src?: string | null; alt: string } & any) => {
+}: {
+  src?: string | null;
+  alt: string;
+  [key: string]: any;
+}) => {
   const [error, setError] = useState(false);
   const finalSrc = !src || error ? DEV_SAMPLE_IMAGE || DEFAULT_IMAGE : src;
   return (
-    // eslint-disable-next-line jsx-a11y/alt-text
     <img src={finalSrc} alt={alt} onError={() => setError(true)} {...props} />
   );
 };
@@ -99,6 +103,30 @@ export default function PropertyDetailPage({
       }
     } catch {
       toast.error("Failed to update wishlist");
+    }
+  };
+
+  const handleShare = async () => {
+    const shareData = {
+      title: street_address || "Property Details",
+      text: `Check out this property at ${street_address}`,
+      url: window.location.href,
+    };
+
+    if (navigator.share) {
+      try {
+        await navigator.share(shareData);
+        toast.success("Shared successfully!");
+      } catch {
+        // User cancelled
+      }
+    } else {
+      try {
+        await navigator.clipboard.writeText(window.location.href);
+        toast.success("Link copied to clipboard!");
+      } catch {
+        toast.error("Failed to copy link");
+      }
     }
   };
 
@@ -162,24 +190,23 @@ export default function PropertyDetailPage({
   ];
 
   const square_feet = sizeInterior?.split(" ")[0] || null;
-  const mapUrl =
-    latitude && longitude
-      ? `https://www.openstreetmap.org/export/embed.html?bbox=${
-          longitude - 0.005
-        },${latitude - 0.005},${longitude + 0.005},${
-          latitude + 0.005
-        }&layer=mapnik&marker=${latitude},${longitude}`
-      : "";
 
   // Build gallery images array: photo_url + all_photos (if present)
-  const galleryImages = [
-    photo_url,
-    ...(all_photos ? Object.values(all_photos) : []),
-  ]
-    .filter(Boolean)
-    // ensure at least one image
-    .concat([DEV_SAMPLE_IMAGE])
-    .filter(Boolean);
+  // Use Set to remove duplicates
+  const uniqueImages = new Set<string>();
+  if (photo_url) uniqueImages.add(photo_url);
+  if (all_photos) {
+    Object.values(all_photos).forEach((url: any) => {
+      if (url) uniqueImages.add(url);
+    });
+  }
+
+  const galleryImages = Array.from(uniqueImages);
+
+  // Fallback if no images
+  if (galleryImages.length === 0) {
+    galleryImages.push(DEV_SAMPLE_IMAGE);
+  }
 
   const handleImageNavigation = (direction: "prev" | "next") => {
     // If user not auth, prevent navigating beyond index 0
@@ -371,7 +398,7 @@ export default function PropertyDetailPage({
                   </div>
                   <div className="space-y-1">
                     <p className="text-xs uppercase tracking-wider text-muted-foreground font-medium">
-                      MLS® Number
+                      ID® Number
                     </p>
                     <p className="text-lg font-medium">{listing_id || "—"}</p>
                   </div>
@@ -439,14 +466,10 @@ export default function PropertyDetailPage({
                 className="animate-in fade-in-50 duration-300"
               >
                 <div className="p-1 bg-card border rounded-xl shadow-sm overflow-hidden">
-                  {mapUrl ? (
-                    <iframe
-                      width="100%"
-                      height="450"
-                      src={mapUrl}
-                      className="border-0 rounded-lg"
-                      loading="lazy"
-                      title="Property location"
+                  {latitude && longitude ? (
+                    <SinglePropertyMap
+                      latitude={Number(latitude)}
+                      longitude={Number(longitude)}
                     />
                   ) : (
                     <div className="aspect-video flex items-center justify-center bg-muted rounded-lg p-6">
@@ -480,12 +503,16 @@ export default function PropertyDetailPage({
 
               <div className="pt-6 border-t mt-6">
                 <div className="flex items-center gap-4 mb-4">
-                  <div className="h-12 w-12 rounded-full bg-muted overflow-hidden border">
-                    <ImageWithFallback
-                      src="/logo.png"
-                      alt="Agent"
-                      className="w-full h-full object-cover"
-                    />
+                  <div className="h-12 w-12 rounded-full bg-muted overflow-hidden border flex items-center justify-center">
+                    {agent?.avatar ? (
+                      <ImageWithFallback
+                        src={agent.avatar}
+                        alt={agent.name}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <User className="h-6 w-6 text-muted-foreground" />
+                    )}
                   </div>
                   <div>
                     <p className="font-semibold">
@@ -494,27 +521,27 @@ export default function PropertyDetailPage({
                     <p className="text-xs text-muted-foreground">
                       {agent?.email || "Licensed Realtor®"}
                     </p>
-                    {agent?.phone && (
+                    {agent?.phoneNumber && (
                       <p className="text-xs text-muted-foreground">
-                        {agent.phone}
+                        {agent.phoneNumber}
                       </p>
                     )}
                   </div>
                 </div>
                 <div className="flex flex-col gap-3 my-4">
-                  <Button className="w-full" size="lg">
-                    <Phone className="mr-2 h-4 w-4" />
-                    {agent?.phone || "Call Agent"}
-                  </Button>
-                  <ContactAgentDialog
+                  <AgentContactDialog
+                    agent={agent}
+                    propertyAddress={street_address || ""}
                     propertyId={_id || id || ""}
-                    propertyAddress={street_address || "this property"}
-                    agentName={agent?.name}
                   />
                 </div>
 
                 <div className="flex gap-3">
-                  <Button variant="outline" className="flex-1">
+                  <Button
+                    variant="outline"
+                    className="flex-1"
+                    onClick={handleShare}
+                  >
                     <Share2 className="mr-2 h-4 w-4" />
                     Share
                   </Button>

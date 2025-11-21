@@ -20,6 +20,7 @@ export const propertySchema = z.object({
   latitude: z.number().optional(),
   longitude: z.number().optional(),
   photo_url: z.string().optional(),
+  all_photos: z.record(z.string(), z.string()).optional(),
   description: z.string().optional(),
   year_built: z.string().optional(),
   agentId: z.string().optional(),

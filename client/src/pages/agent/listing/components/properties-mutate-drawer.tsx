@@ -46,7 +46,7 @@ const formSchema = z.object({
   description: z.string().optional(),
   latitude: z.string().min(1, "Latitude is required"),
   longitude: z.string().min(1, "Longitude is required"),
-  image: z.any().optional(),
+  images: z.any().optional(),
 });
 
 type PropertyForm = z.infer<typeof formSchema>;
@@ -62,7 +62,8 @@ export function PropertiesMutateDrawer() {
     useCreatePropertyMutation();
   const [updateProperty, { isLoading: isUpdating }] =
     useUpdatePropertyMutation();
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [existingImages, setExistingImages] = useState<string[]>([]);
 
   const isUpdate = !!editingProperty;
   const open = isAddingProperty || isUpdate;
@@ -105,8 +106,19 @@ export function PropertiesMutateDrawer() {
         latitude: String(editingProperty.latitude),
         longitude: String(editingProperty.longitude),
       });
+      // Load existing images
       if (editingProperty.photo_url) {
-        setImagePreview(editingProperty.photo_url);
+        const images = [editingProperty.photo_url];
+        // Add additional photos from all_photos if available
+        if (editingProperty.all_photos) {
+          const additionalPhotos = Object.values(editingProperty.all_photos);
+          images.push(
+            ...additionalPhotos.filter(
+              (url) => url !== editingProperty.photo_url,
+            ),
+          );
+        }
+        setExistingImages(images);
       }
     }
   }, [editingProperty, form]);
@@ -117,14 +129,16 @@ export function PropertiesMutateDrawer() {
 
       // Add all form fields
       Object.entries(data).forEach(([key, value]) => {
-        if (key !== "image" && value) {
+        if (key !== "images" && value) {
           formData.append(key, value);
         }
       });
 
-      // Add image if selected
-      if (data.image && data.image[0]) {
-        formData.append("image", data.image[0]);
+      // Add multiple images if selected
+      if (data.images && data.images.length > 0) {
+        Array.from(data.images as FileList).forEach((file: File) => {
+          formData.append("images", file);
+        });
       }
 
       if (isUpdate && editingProperty) {
@@ -138,7 +152,8 @@ export function PropertiesMutateDrawer() {
       }
 
       form.reset();
-      setImagePreview(null);
+      setImagePreviews([]);
+      setExistingImages([]);
     } catch (error: any) {
       toast.error(error?.data?.message || "Failed to save property");
     }
@@ -148,18 +163,35 @@ export function PropertiesMutateDrawer() {
     setEditingProperty(null);
     setIsAddingProperty(false);
     form.reset();
-    setImagePreview(null);
+    setImagePreviews([]);
+    setExistingImages([]);
   };
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
+  const handleImagesChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      const fileArray = Array.from(files);
+      const previews: string[] = [];
+
+      fileArray.forEach((file) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          previews.push(reader.result as string);
+          if (previews.length === fileArray.length) {
+            setImagePreviews(previews);
+          }
+        };
+        reader.readAsDataURL(file);
+      });
     }
+  };
+
+  const removeImagePreview = (index: number) => {
+    setImagePreviews((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const removeExistingImage = (index: number) => {
+    setExistingImages((prev) => prev.filter((_, i) => i !== index));
   };
 
   return (
@@ -183,27 +215,101 @@ export function PropertiesMutateDrawer() {
             {/* Image Upload */}
             <FormField
               control={form.control}
-              name="image"
+              name="images"
               render={({ field: { onChange, value, ...field } }) => (
                 <FormItem>
-                  <FormLabel>Property Image</FormLabel>
+                  <FormLabel>Property Images (Max 5)</FormLabel>
                   <FormControl>
-                    <div className="flex flex-col gap-2">
+                    <div className="flex flex-col gap-3">
                       <Input
                         type="file"
                         accept="image/*"
+                        multiple
                         onChange={(e) => {
                           onChange(e.target.files);
-                          handleImageChange(e);
+                          handleImagesChange(e);
                         }}
                         {...field}
                       />
-                      {imagePreview && (
-                        <img
-                          src={imagePreview}
-                          alt="Preview"
-                          className="h-32 w-full rounded-md object-cover"
-                        />
+
+                      {/* Existing Images */}
+                      {existingImages.length > 0 && (
+                        <div className="space-y-2">
+                          <p className="text-sm text-muted-foreground">
+                            Existing Images
+                          </p>
+                          <div className="grid grid-cols-2 gap-2">
+                            {existingImages.map((url, index) => (
+                              <div key={index} className="relative group">
+                                <img
+                                  src={url}
+                                  alt={`Existing ${index + 1}`}
+                                  className="h-32 w-full rounded-md object-cover"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => removeExistingImage(index)}
+                                  className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                >
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="16"
+                                    height="16"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                  >
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                  </svg>
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+
+                      {/* New Image Previews */}
+                      {imagePreviews.length > 0 && (
+                        <div className="space-y-2">
+                          <p className="text-sm text-muted-foreground">
+                            New Images ({imagePreviews.length}/5)
+                          </p>
+                          <div className="grid grid-cols-2 gap-2">
+                            {imagePreviews.map((preview, index) => (
+                              <div key={index} className="relative group">
+                                <img
+                                  src={preview}
+                                  alt={`Preview ${index + 1}`}
+                                  className="h-32 w-full rounded-md object-cover"
+                                />
+                                <button
+                                  type="button"
+                                  onClick={() => removeImagePreview(index)}
+                                  className="absolute top-1 right-1 bg-destructive text-destructive-foreground rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
+                                >
+                                  <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    width="16"
+                                    height="16"
+                                    viewBox="0 0 24 24"
+                                    fill="none"
+                                    stroke="currentColor"
+                                    strokeWidth="2"
+                                    strokeLinecap="round"
+                                    strokeLinejoin="round"
+                                  >
+                                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                                  </svg>
+                                </button>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
                       )}
                     </div>
                   </FormControl>

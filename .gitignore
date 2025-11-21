@@ -10,3 +10,4 @@ client/.env
 # Logs and temporary files
 npm-debug.log*
 yarn-error.log*
+*.log

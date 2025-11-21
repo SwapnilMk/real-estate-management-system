@@ -50,7 +50,7 @@ export const getSimilarProperties = async (req: Request, res: Response) => {
 
 export const addToWishlist = async (req: Request, res: Response) => {
   try {
-    const user = await addToWishlistService(req.user.id, req.params.id);
+    const user = await addToWishlistService(req.user!.id, req.params.id);
     res.json(user);
   } catch (error) {
     res.status(500).json({ message: "Error adding to wishlist" });
@@ -59,7 +59,7 @@ export const addToWishlist = async (req: Request, res: Response) => {
 
 export const removeFromWishlist = async (req: Request, res: Response) => {
   try {
-    const user = await removeFromWishlistService(req.user.id, req.params.id);
+    const user = await removeFromWishlistService(req.user!.id, req.params.id);
     res.json(user);
   } catch (error) {
     res.status(500).json({ message: "Error removing from wishlist" });
@@ -68,7 +68,7 @@ export const removeFromWishlist = async (req: Request, res: Response) => {
 
 export const getSavedProperties = async (req: Request, res: Response) => {
   try {
-    const properties = await getSavedPropertiesService(req.user.id);
+    const properties = await getSavedPropertiesService(req.user!.id);
     res.json(properties);
   } catch (error) {
     res.status(500).json({ message: "Error fetching saved properties" });
@@ -78,9 +78,23 @@ export const getSavedProperties = async (req: Request, res: Response) => {
 export const createProperty = async (req: Request, res: Response) => {
   try {
     let photoUrl = "";
-    if (req.file) {
-      const result: any = await uploadToCloudinary(req.file);
-      photoUrl = result.secure_url;
+    const allPhotos: Record<string, string> = {};
+
+    if (req.files && Array.isArray(req.files)) {
+      const uploadPromises = (req.files as Express.Multer.File[]).map(
+        async (file) => {
+          const result: any = await uploadToCloudinary(file);
+          return result.secure_url;
+        },
+      );
+      const uploadedUrls = await Promise.all(uploadPromises);
+
+      if (uploadedUrls.length > 0) {
+        photoUrl = uploadedUrls[0]; // Set the first image as the main photo
+        uploadedUrls.forEach((url, index) => {
+          allPhotos[`photo_${index + 1}`] = url;
+        });
+      }
     }
 
     const propertyData = req.body;
@@ -131,6 +145,7 @@ export const createProperty = async (req: Request, res: Response) => {
         longitude: Number(longitude),
         listing_id: `L${Date.now()}`,
         photo_url: photoUrl,
+        all_photos: allPhotos,
         description,
         year_built,
       },
@@ -142,7 +157,7 @@ export const createProperty = async (req: Request, res: Response) => {
 
     const newProperty = await createPropertyService(
       formattedProperty,
-      req.user.id,
+      req.user!.id,
     );
     res.status(201).json(newProperty);
   } catch (error) {
@@ -154,24 +169,39 @@ export const createProperty = async (req: Request, res: Response) => {
 export const updateProperty = async (req: Request, res: Response) => {
   try {
     const propertyData = req.body;
+    const updateObj: any = {};
 
-    // Handle file upload if new image provided
-    if (req.file) {
-      const result: any = await uploadToCloudinary(req.file);
-      // We need to update the photo_url in the properties object
-      // The structure of update depends on how we receive data.
-      // Assuming we receive fields to update.
+    // Handle file upload if new images provided
+    if (req.files && Array.isArray(req.files) && req.files.length > 0) {
+      const uploadPromises = (req.files as Express.Multer.File[]).map(
+        async (file) => {
+          const result: any = await uploadToCloudinary(file);
+          return result.secure_url;
+        },
+      );
+      const uploadedUrls = await Promise.all(uploadPromises);
 
-      // If we are updating, we need to reconstruct the nested structure or use dot notation.
-      // Using dot notation for MongoDB updates is safer.
-      propertyData["properties.photo_url"] = result.secure_url;
+      if (uploadedUrls.length > 0) {
+        // Update main photo
+        updateObj["properties.photo_url"] = uploadedUrls[0];
+
+        // Update all_photos map.
+        // Note: This replaces existing photos if we strictly follow this logic.
+        // A more complex logic would be needed to append or replace specific indices.
+        // For this implementation, we'll assume a full replace of the gallery if new images are sent,
+        // or we could merge. Let's just set the new map for now.
+        const allPhotos: Record<string, string> = {};
+        uploadedUrls.forEach((url, index) => {
+          allPhotos[`photo_${index + 1}`] = url;
+        });
+        updateObj["properties.all_photos"] = allPhotos;
+      }
     }
 
     // Mongoose findByIdAndUpdate with flat keys for nested objects requires flattened keys.
     // Or we can merge the data.
     // For simplicity, let's assume we construct the update object.
 
-    const updateObj: any = {};
     const nestedFields = [
       "city",
       "province",
@@ -197,10 +227,6 @@ export const updateProperty = async (req: Request, res: Response) => {
       }
     });
 
-    if (propertyData["properties.photo_url"]) {
-      updateObj["properties.photo_url"] = propertyData["properties.photo_url"];
-    }
-
     if (propertyData.latitude && propertyData.longitude) {
       updateObj.geometry = {
         type: "Point",
@@ -214,13 +240,14 @@ export const updateProperty = async (req: Request, res: Response) => {
     const updatedProperty = await updatePropertyService(
       req.params.id,
       { $set: updateObj },
-      req.user.id,
+      req.user!.id,
     );
     res.json(updatedProperty);
-  } catch (error: any) {
-    console.error(error);
-    if (error.message === "Not authorized to update this property") {
-      res.status(403).json({ message: error.message });
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.error(err);
+    if (err.message === "Not authorized to update this property") {
+      res.status(403).json({ message: err.message });
     } else {
       res.status(500).json({ message: "Error updating property" });
     }
@@ -229,7 +256,7 @@ export const updateProperty = async (req: Request, res: Response) => {
 
 export const getAgentProperties = async (req: Request, res: Response) => {
   try {
-    const properties = await getAgentPropertiesService(req.user.id);
+    const properties = await getAgentPropertiesService(req.user!.id);
     res.json(properties);
   } catch (error) {
     res.status(500).json({ message: "Error fetching agent properties" });
@@ -238,7 +265,7 @@ export const getAgentProperties = async (req: Request, res: Response) => {
 
 export const getDashboardStats = async (req: Request, res: Response) => {
   try {
-    const stats = await getDashboardStatsService(req.user.id);
+    const stats = await getDashboardStatsService(req.user!.id);
     res.json(stats);
   } catch (error) {
     res.status(500).json({ message: "Error fetching dashboard stats" });
@@ -247,14 +274,15 @@ export const getDashboardStats = async (req: Request, res: Response) => {
 
 export const deleteProperty = async (req: Request, res: Response) => {
   try {
-    await deletePropertyService(req.params.id, req.user.id);
+    await deletePropertyService(req.params.id, req.user!.id);
     res.json({ message: "Property deleted successfully" });
-  } catch (error: any) {
-    console.error(error);
-    if (error.message === "Not authorized to delete this property") {
-      res.status(403).json({ message: error.message });
-    } else if (error.message === "Property not found") {
-      res.status(404).json({ message: error.message });
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.error(err);
+    if (err.message === "Not authorized to delete this property") {
+      res.status(403).json({ message: err.message });
+    } else if (err.message === "Property not found") {
+      res.status(404).json({ message: err.message });
     } else {
       res.status(500).json({ message: "Error deleting property" });
     }
@@ -267,12 +295,13 @@ export const bulkDeleteProperties = async (req: Request, res: Response) => {
     if (!ids || !Array.isArray(ids) || ids.length === 0) {
       return res.status(400).json({ message: "Invalid property IDs" });
     }
-    await bulkDeletePropertiesService(ids, req.user.id);
+    await bulkDeletePropertiesService(ids, req.user!.id);
     res.json({ message: `${ids.length} properties deleted successfully` });
-  } catch (error: any) {
-    console.error(error);
-    if (error.message === "Not authorized to delete one or more properties") {
-      res.status(403).json({ message: error.message });
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.error(err);
+    if (err.message === "Not authorized to delete one or more properties") {
+      res.status(403).json({ message: err.message });
     } else {
       res.status(500).json({ message: "Error deleting properties" });
     }
@@ -284,7 +313,7 @@ export const getAgentFavoritedProperties = async (
   res: Response,
 ) => {
   try {
-    const favorites = await getAgentFavoritedPropertiesService(req.user.id);
+    const favorites = await getAgentFavoritedPropertiesService(req.user!.id);
     res.json(favorites);
   } catch (error) {
     console.error(error);

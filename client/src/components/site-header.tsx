@@ -11,7 +11,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { logout } from "@/features/auth/authSlice";
 import { useLogoutMutation } from "@/services/authApi";
@@ -60,6 +60,11 @@ export function SiteHeader() {
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" className="h-10 w-10 rounded-full p-0">
                 <Avatar className="h-10 w-10">
+                  <AvatarImage
+                    src={user?.avatar}
+                    alt={user?.name}
+                    className="object-cover"
+                  />
                   <AvatarFallback
                     className={
                       user?.role === "AGENT" ? "bg-red-100 text-red-700" : ""
