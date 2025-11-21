@@ -1,7 +1,6 @@
 import { PropertyCard } from "./property-card";
 import { usePropertyStore } from "@/lib/store";
 import { Loader, ChevronLeft, ChevronRight } from "lucide-react";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import type { Property } from "@/services/propertyApi";
@@ -85,7 +84,7 @@ export function PropertyList({
   }
 
   return (
-    <ScrollArea className="flex-1" ref={scrollAreaRef}>
+    <div className="flex-1 overflow-y-auto pr-2" ref={scrollAreaRef}>
       <div className="p-4">
         <div className="mb-4 flex justify-between items-center">
           <h2 className="font-semibold">{totalCount} Properties</h2>
@@ -94,7 +93,7 @@ export function PropertyList({
             {Math.min(currentPage * itemsPerPage, totalCount)} of {totalCount}
           </p>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {currentItems.map((property) => (
             <div
               key={property.id}
@@ -164,6 +163,6 @@ export function PropertyList({
           </div>
         )}
       </div>
-    </ScrollArea>
+    </div>
   );
 }

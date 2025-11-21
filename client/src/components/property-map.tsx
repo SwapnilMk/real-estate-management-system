@@ -106,7 +106,7 @@ export default function PropertyMap({ onLoadingChange }: PropertyMapProps) {
     <GoogleMap
       mapContainerStyle={containerStyle}
       center={defaultCenter}
-      zoom={5}
+      zoom={6}
       onLoad={onLoad}
       onUnmount={onUnmount}
       onBoundsChanged={onBoundsChanged}

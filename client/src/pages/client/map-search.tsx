@@ -24,19 +24,15 @@ export default function MapSearchPage() {
   // Handle listing click - pan map to location
   const handleListingClick = useCallback(
     (property: Property) => {
-      // Set as selected to highlight on map
       setSelectedProperty(property.id);
-
-      // The PropertyMap component will handle panning to the selected property
-      // through the selectedProperty state in the store
     },
     [setSelectedProperty],
   );
 
   return (
-    <div className="h-[calc(100vh-4rem)] flex flex-col bg-background w-full">
-      <div className="flex-1 relative lg:grid lg:grid-cols-2 overflow-hidden">
-        {/* Map Container - Full height on mobile, half width on desktop */}
+    <div className="h-[calc(100vh-4rem)] flex flex-col bg-background w-full relative">
+      <div className="flex-1 lg:grid lg:grid-cols-2 overflow-hidden">
+        {/* Map Container */}
         <div className="absolute inset-0 lg:static lg:h-full w-full z-0">
           <PropertyMap onLoadingChange={setMapLoading} />
         </div>
@@ -47,7 +43,7 @@ export default function MapSearchPage() {
             absolute bottom-0 left-0 right-0 bg-background z-10 flex flex-col 
             transition-all duration-300 ease-in-out shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]
             lg:static lg:h-full lg:border-l lg:shadow-none lg:translate-y-0
-            ${isMobileListOpen ? "h-[80%]" : "h-[180px]"}
+            ${isMobileListOpen ? "h-[80%]" : "h-[40%]"}
             rounded-t-3xl lg:rounded-none
           `}
         >
@@ -69,11 +65,11 @@ export default function MapSearchPage() {
                 className="lg:hidden text-xs text-primary font-semibold"
                 onClick={() => setIsMobileListOpen(!isMobileListOpen)}
               >
-                {isMobileListOpen ? "Hide List" : "Show List"}
+                {isMobileListOpen ? "Hide List" : "Expand List"}
               </button>
             </div>
 
-            <div className="flex-1 overflow-y-auto">
+            <div className="flex-1 overflow-hidden flex flex-col">
               <PropertyList
                 isLoading={mapLoading}
                 onCardClick={handleListingClick}
