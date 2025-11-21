@@ -17,7 +17,7 @@ const config_1 = __importDefault(require("../config/config"));
 exports.COOKIE_OPTIONS = {
     httpOnly: true,
     secure: config_1.default.NODE_ENV === "production",
-    sameSite: "lax",
+    sameSite: (config_1.default.NODE_ENV === "production" ? "none" : "lax"),
     maxAge: 7 * 24 * 60 * 60 * 1000,
 };
 // User Register Service

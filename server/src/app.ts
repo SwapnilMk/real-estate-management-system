@@ -2,14 +2,14 @@ import express from "express";
 import cors from "cors";
 import helmet from "helmet";
 import cookieParser from "cookie-parser";
-// import { corsOptions } from "./config/cors";
+import { corsOptions } from "./config/cors";
 import apiRoutes from "./routes";
 import { limiter } from "./config/rate-limit";
 const app = express();
 
 // Middlewares
+app.use(cors(corsOptions));
 app.use(helmet());
-app.use(cors());
 app.use(express.json());
 app.use(cookieParser());
 app.use(limiter);

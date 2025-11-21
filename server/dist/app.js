@@ -12,8 +12,8 @@ const routes_1 = __importDefault(require("./routes"));
 const rate_limit_1 = require("./config/rate-limit");
 const app = (0, express_1.default)();
 // Middlewares
-app.use((0, helmet_1.default)());
 app.use((0, cors_1.default)(cors_2.corsOptions));
+app.use((0, helmet_1.default)());
 app.use(express_1.default.json());
 app.use((0, cookie_parser_1.default)());
 app.use(rate_limit_1.limiter);
