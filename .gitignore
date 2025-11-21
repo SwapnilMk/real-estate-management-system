@@ -1,6 +1,7 @@
 # Dependency directories
 server/node_modules
 server/logs
+server/dist
 client/node_modules
 
 # Environment variables
