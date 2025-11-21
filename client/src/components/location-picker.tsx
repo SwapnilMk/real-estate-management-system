@@ -1,10 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import {
-  GoogleMap,
-  useJsApiLoader,
-  Marker,
-  Autocomplete,
-} from "@react-google-maps/api";
+import { GoogleMap, Marker, Autocomplete } from "@react-google-maps/api";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { MapPin, Search } from "lucide-react";
@@ -19,24 +14,20 @@ const defaultCenter = {
   lng: 78.9629,
 };
 
-const libraries: "places"[] = ["places"];
-
 interface LocationPickerProps {
   latitude?: string;
   longitude?: string;
   onLocationChange: (lat: number, lng: number, address?: string) => void;
 }
 
+import { useGoogleMaps } from "@/components/google-maps-provider";
+
 export function LocationPicker({
   latitude,
   longitude,
   onLocationChange,
 }: LocationPickerProps) {
-  const { isLoaded } = useJsApiLoader({
-    id: "google-map-script",
-    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "",
-    libraries,
-  });
+  const { isLoaded } = useGoogleMaps();
 
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [markerPosition, setMarkerPosition] = useState<{
@@ -52,7 +43,6 @@ export function LocationPicker({
       const lat = parseFloat(latitude);
       const lng = parseFloat(longitude);
       if (!isNaN(lat) && !isNaN(lng)) {
-        // eslint-disable-next-line react-hooks/exhaustive-deps
         setMarkerPosition((prev) => {
           if (prev && prev.lat === lat && prev.lng === lng) return prev;
           return { lat, lng };

@@ -12,6 +12,7 @@ export default function MapSearchPage() {
   const [mapLoading, setMapLoading] = useState(false);
   const { totalVisibleCount, setSelectedProperty } = usePropertyStore();
   const { user } = useSelector((state: RootState) => state.auth);
+  const [isMobileListOpen, setIsMobileListOpen] = useState(false);
 
   // Fetch wishlist if user is logged in
   const { data: wishlistData } = useGetUserWishlistQuery(undefined, {
@@ -33,27 +34,53 @@ export default function MapSearchPage() {
   );
 
   return (
-    <div className="min-h-screen flex flex-col bg-background">
-      <div className="flex-1 grid grid-cols-1 lg:grid-cols-2 relative overflow-hidden">
-        {/* Map Container - 50vh on mobile, full height on desktop */}
-        <div className="h-[50vh] lg:h-full relative">
+    <div className="h-[calc(100vh-4rem)] flex flex-col bg-background w-full">
+      <div className="flex-1 relative lg:grid lg:grid-cols-2 overflow-hidden">
+        {/* Map Container - Full height on mobile, half width on desktop */}
+        <div className="absolute inset-0 lg:static lg:h-full w-full z-0">
           <PropertyMap onLoadingChange={setMapLoading} />
         </div>
 
-        {/* Listings Container - Scrollable */}
-        <div className="h-[50vh] lg:h-full flex flex-col border-l">
-          <MapFilters />
-
-          {/* Properties Count Badge */}
-          <div className="px-4 py-2 bg-muted/30 text-sm font-medium border-b">
-            <span>{totalVisibleCount} properties in view</span>
+        {/* Listings Container - Bottom sheet on mobile, right column on desktop */}
+        <div
+          className={`
+            absolute bottom-0 left-0 right-0 bg-background z-10 flex flex-col 
+            transition-all duration-300 ease-in-out shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.1)]
+            lg:static lg:h-full lg:border-l lg:shadow-none lg:translate-y-0
+            ${isMobileListOpen ? "h-[80%]" : "h-[180px]"}
+            rounded-t-3xl lg:rounded-none
+          `}
+        >
+          {/* Mobile Drag Handle */}
+          <div
+            className="w-full flex items-center justify-center p-3 lg:hidden cursor-pointer hover:bg-muted/50 rounded-t-3xl"
+            onClick={() => setIsMobileListOpen(!isMobileListOpen)}
+          >
+            <div className="w-12 h-1.5 bg-muted-foreground/20 rounded-full" />
           </div>
 
-          <PropertyList
-            isLoading={mapLoading}
-            onCardClick={handleListingClick}
-            wishlistIds={wishlistIds}
-          />
+          <div className="flex-1 flex flex-col overflow-hidden">
+            <MapFilters />
+
+            {/* Properties Count Badge */}
+            <div className="px-4 py-2 bg-muted/30 text-sm font-medium border-b flex justify-between items-center">
+              <span>{totalVisibleCount} properties in view</span>
+              <button
+                className="lg:hidden text-xs text-primary font-semibold"
+                onClick={() => setIsMobileListOpen(!isMobileListOpen)}
+              >
+                {isMobileListOpen ? "Hide List" : "Show List"}
+              </button>
+            </div>
+
+            <div className="flex-1 overflow-y-auto">
+              <PropertyList
+                isLoading={mapLoading}
+                onCardClick={handleListingClick}
+                wishlistIds={wishlistIds}
+              />
+            </div>
+          </div>
         </div>
       </div>
     </div>

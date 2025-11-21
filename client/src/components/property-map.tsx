@@ -1,9 +1,4 @@
-import {
-  GoogleMap,
-  useJsApiLoader,
-  Marker,
-  InfoWindow,
-} from "@react-google-maps/api";
+import { GoogleMap, Marker, InfoWindow } from "@react-google-maps/api";
 import { useState, useCallback, useEffect, useRef } from "react";
 import { usePropertyStore } from "@/lib/store";
 import { useGetPropertiesQuery } from "@/services/propertyApi";
@@ -23,11 +18,10 @@ interface PropertyMapProps {
   onLoadingChange?: (loading: boolean) => void;
 }
 
+import { useGoogleMaps } from "@/components/google-maps-provider";
+
 export default function PropertyMap({ onLoadingChange }: PropertyMapProps) {
-  const { isLoaded } = useJsApiLoader({
-    id: "google-map-script",
-    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "",
-  });
+  const { isLoaded } = useGoogleMaps();
 
   const [map, setMap] = useState<google.maps.Map | null>(null);
   const [infoWindowOpen, setInfoWindowOpen] = useState<string | null>(null);
@@ -66,7 +60,7 @@ export default function PropertyMap({ onLoadingChange }: PropertyMapProps) {
     setMap(map);
   }, []);
 
-  const onUnmount = useCallback(function callback(_map: google.maps.Map) {
+  const onUnmount = useCallback(function callback() {
     setMap(null);
   }, []);
 

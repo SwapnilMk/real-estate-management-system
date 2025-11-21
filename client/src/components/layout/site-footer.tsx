@@ -3,7 +3,7 @@ import {
   Mail,
   Facebook,
   Instagram,
-  Linkedin,
+  Twitter,
   Github,
 } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -20,7 +20,7 @@ export function SiteFooter({ darkMode = false }: SiteFooterProps) {
   return (
     <footer className={`${bgColor} ${textColor} py-12 px-4`}>
       <div className="max-w-6xl mx-auto">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
           {/* Brand Section */}
           <div className="space-y-4">
             <div className="flex items-center gap-2">
@@ -32,7 +32,7 @@ export function SiteFooter({ darkMode = false }: SiteFooterProps) {
             <p className={`text-sm ${mutedTextColor}`}>
               © {new Date().getFullYear()} Real Estate Project by <br />
               <a
-                href="mailto:mswapnil218@gmail.com"
+                href="https://github.com/SwapnilMk"
                 className="font-bold text-md hover:underline"
               >
                 Swapnil Mahadik
@@ -40,16 +40,36 @@ export function SiteFooter({ darkMode = false }: SiteFooterProps) {
             </p>
 
             <div className="flex gap-4">
-              <a href="#" className={`${mutedTextColor} hover:text-white`}>
+              <a
+                href="https://www.facebook.com/swapmahadik/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`${mutedTextColor} hover:text-white`}
+              >
                 <Facebook className="h-5 w-5" />
               </a>
-              <a href="#" className={`${mutedTextColor} hover:text-white`}>
+              <a
+                href="https://www.instagram.com/swapyy_mk/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`${mutedTextColor} hover:text-white`}
+              >
                 <Instagram className="h-5 w-5" />
               </a>
-              <a href="#" className={`${mutedTextColor} hover:text-white`}>
-                <Linkedin className="h-5 w-5" />
+              <a
+                href="https://x.com/Swapy_mk"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`${mutedTextColor} hover:text-white`}
+              >
+                <Twitter className="h-5 w-5" />
               </a>
-              <a href="#" className={`${mutedTextColor} hover:text-white`}>
+              <a
+                href="https://github.com/SwapnilMk"
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`${mutedTextColor} hover:text-white`}
+              >
                 <Github className="h-5 w-5" />
               </a>
             </div>
@@ -90,46 +110,8 @@ export function SiteFooter({ darkMode = false }: SiteFooterProps) {
                 </Link>
               </li>
               <li>
-                <Link to="/blog" className="hover:underline">
-                  Blog
-                </Link>
-              </li>
-              <li>
                 <Link to="/admin" className="hover:underline">
                   Admin Panel
-                </Link>
-              </li>
-            </ul>
-          </div>
-
-          {/* Locations Section */}
-          <div>
-            <h3 className="font-bold mb-4 text-lg">Locations</h3>
-            <ul className="space-y-3">
-              {/* Indian States */}
-              <li>
-                <Link to="/maharashtra-real-estate" className="hover:underline">
-                  Maharashtra
-                </Link>
-              </li>
-              <li>
-                <Link to="/gujarat-real-estate" className="hover:underline">
-                  Gujarat
-                </Link>
-              </li>
-              <li>
-                <Link to="/karnataka-real-estate" className="hover:underline">
-                  Karnataka
-                </Link>
-              </li>
-              <li>
-                <Link to="/tamil-nadu-real-estate" className="hover:underline">
-                  Tamil Nadu
-                </Link>
-              </li>
-              <li>
-                <Link to="/west-bengal-real-estate" className="hover:underline">
-                  West Bengal
                 </Link>
               </li>
             </ul>

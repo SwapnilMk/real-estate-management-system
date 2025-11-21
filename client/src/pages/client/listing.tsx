@@ -56,7 +56,7 @@ export default function ListingsPage() {
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
-      <main className="container mx-auto max-w-7xl py-4 md:py-8 flex-1">
+      <main className="container mx-auto max-w-7xl px-4 py-4 md:py-8 flex-1">
         <div className="mb-4 md:mb-8">
           <h1 className="text-2xl md:text-3xl font-bold mb-2">
             Surrey Real Estate
@@ -89,13 +89,6 @@ export default function ListingsPage() {
                 <SelectItem value="newest">Newest</SelectItem>
               </SelectContent>
             </Select>
-
-            <Button variant="outline" size="sm" asChild>
-              <Link to="/map-search">
-                <Map className="mr-2 h-4 w-4" />
-                Map
-              </Link>
-            </Button>
           </div>
         ) : (
           <div className="flex items-center justify-between mb-6">

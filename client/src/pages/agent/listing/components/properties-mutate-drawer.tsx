@@ -196,8 +196,8 @@ export function PropertiesMutateDrawer() {
 
   return (
     <Sheet open={open} onOpenChange={(v) => !v && handleClose()}>
-      <SheetContent className="flex flex-col sm:max-w-xl">
-        <SheetHeader className="text-start">
+      <SheetContent className="flex flex-col w-full sm:max-w-full md:max-w-2xl lg:max-w-3xl p-0 gap-0">
+        <SheetHeader className="p-6 border-b">
           <SheetTitle>{isUpdate ? "Update" : "Create"} Property</SheetTitle>
           <SheetDescription>
             {isUpdate
@@ -210,7 +210,7 @@ export function PropertiesMutateDrawer() {
           <form
             id="properties-form"
             onSubmit={form.handleSubmit(onSubmit)}
-            className="flex-1 space-y-4 overflow-y-auto px-1"
+            className="flex-1 space-y-6 overflow-y-auto p-6"
           >
             {/* Image Upload */}
             <FormField
@@ -333,7 +333,7 @@ export function PropertiesMutateDrawer() {
               )}
             />
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="city"
@@ -392,7 +392,7 @@ export function PropertiesMutateDrawer() {
               )}
             />
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <FormField
                 control={form.control}
                 name="type"
@@ -593,7 +593,7 @@ export function PropertiesMutateDrawer() {
             />
           </form>
         </Form>
-        <SheetFooter className="gap-2">
+        <SheetFooter className="p-6 border-t gap-2 sm:justify-end">
           <SheetClose asChild>
             <Button variant="outline" onClick={handleClose}>
               Close

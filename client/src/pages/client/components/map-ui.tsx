@@ -1,10 +1,5 @@
 import { useState, useCallback } from "react";
-import {
-  GoogleMap,
-  useJsApiLoader,
-  Marker,
-  InfoWindow,
-} from "@react-google-maps/api";
+import { GoogleMap, Marker, InfoWindow } from "@react-google-maps/api";
 import { useGetPropertiesQuery } from "@/services/propertyApi";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import {
@@ -26,6 +21,8 @@ const center = {
   lng: -122.849,
 };
 
+import { useGoogleMaps } from "@/components/google-maps-provider";
+
 export function MapUI() {
   const dispatch = useAppDispatch();
   const { selectedProperty, filters } = useAppSelector(
@@ -36,10 +33,7 @@ export function MapUI() {
   const [bounds, setBounds] = useState<string | undefined>(undefined);
   const [showList, setShowList] = useState(false);
 
-  const { isLoaded } = useJsApiLoader({
-    id: "google-map-script",
-    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
-  });
+  const { isLoaded } = useGoogleMaps();
 
   const { data } = useGetPropertiesQuery({ ...filters, bounds });
 

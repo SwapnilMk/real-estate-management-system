@@ -8,7 +8,6 @@ import {
   MenuIcon,
   Home,
   Map,
-  Phone,
   PhoneCall,
   User,
   Search,
@@ -84,16 +83,16 @@ export function MobileBottomNav() {
             <span>Map</span>
           </Link>
 
-          {/* Contact */}
+          {/* Listings */}
           <Link
-            to="/contact"
+            to="/listings"
             className={cn(
               "flex flex-col items-center justify-center text-xs",
-              isActive("/contact") ? "text-primary" : "text-gray-500",
+              isActive("/listings") ? "text-primary" : "text-gray-500",
             )}
           >
-            <Phone className="h-5 w-5 mb-1" />
-            <span>Contact</span>
+            <Search className="h-5 w-5 mb-1" />
+            <span>Listings</span>
           </Link>
 
           {/* LOGIN or USER MENU */}
@@ -109,9 +108,17 @@ export function MobileBottomNav() {
             <Sheet open={userMenuOpen} onOpenChange={setUserMenuOpen}>
               <SheetTrigger asChild>
                 <button className="flex flex-col items-center justify-center text-xs text-gray-500">
-                  <div className="h-6 w-6 rounded-full bg-black text-white flex items-center justify-center mb-1 text-sm">
-                    {initials}
-                  </div>
+                  {user?.avatar ? (
+                    <img
+                      src={user.avatar}
+                      alt={user.name}
+                      className="h-6 w-6 rounded-full object-cover mb-1"
+                    />
+                  ) : (
+                    <div className="h-6 w-6 rounded-full bg-black text-white flex items-center justify-center mb-1 text-sm">
+                      {initials}
+                    </div>
+                  )}
                   <span>Account</span>
                 </button>
               </SheetTrigger>
@@ -129,16 +136,28 @@ export function MobileBottomNav() {
 
                   {/* Dashboard or Profile */}
                   {user?.role === "AGENT" ? (
-                    <button
-                      onClick={() => {
-                        navigate("/dashboard");
-                        setUserMenuOpen(false);
-                      }}
-                      className="w-full flex items-center p-3 border rounded-md hover:bg-muted"
-                    >
-                      <LayoutDashboard className="h-5 w-5 mr-3" />
-                      Dashboard
-                    </button>
+                    <>
+                      <button
+                        onClick={() => {
+                          navigate("/dashboard");
+                          setUserMenuOpen(false);
+                        }}
+                        className="w-full flex items-center p-3 border rounded-md hover:bg-muted"
+                      >
+                        <LayoutDashboard className="h-5 w-5 mr-3" />
+                        Dashboard
+                      </button>
+                      <button
+                        onClick={() => {
+                          navigate("/profile");
+                          setUserMenuOpen(false);
+                        }}
+                        className="w-full flex items-center p-3 border rounded-md hover:bg-muted"
+                      >
+                        <User className="h-5 w-5 mr-3" />
+                        My Profile
+                      </button>
+                    </>
                   ) : (
                     <button
                       onClick={() => {

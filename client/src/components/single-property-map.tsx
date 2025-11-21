@@ -1,4 +1,4 @@
-import { GoogleMap, useJsApiLoader, Marker } from "@react-google-maps/api";
+import { GoogleMap, Marker } from "@react-google-maps/api";
 import { useMemo } from "react";
 import { MapPin, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -14,14 +14,13 @@ interface SinglePropertyMapProps {
   longitude: number;
 }
 
+import { useGoogleMaps } from "@/components/google-maps-provider";
+
 export function SinglePropertyMap({
   latitude,
   longitude,
 }: SinglePropertyMapProps) {
-  const { isLoaded } = useJsApiLoader({
-    id: "google-map-script",
-    googleMapsApiKey: import.meta.env.VITE_GOOGLE_MAPS_API_KEY || "",
-  });
+  const { isLoaded } = useGoogleMaps();
 
   const center = useMemo(
     () => ({
